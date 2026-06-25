@@ -26,13 +26,13 @@
 
 ```text
                           ┌─────────────────────────────┐
-                          │   apps/web  (Next.js)        │
+                          │   frontend  (Next.js)        │
                           │   Home · Documents · Memory  │
                           │   AI Chat · Profile          │
                           └──────────────┬──────────────┘
                                          │ HTTPS / JWT bearer (/api/v1/...)
                           ┌──────────────▼──────────────┐
-                          │   apps/api  (FastAPI)        │
+                          │   backend   (FastAPI)        │
                           │  routes → service → models   │
                           │  ┌────────────────────────┐  │
                           │  │ Permission Service     │  │ ◀── permission before retrieval

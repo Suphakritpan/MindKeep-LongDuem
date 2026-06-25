@@ -11,21 +11,19 @@ MindKeep ใช้ **monorepo** เพื่อแยก frontend / backend / fu
 
 ```text
 mindkeep/
-├── apps/
-│   ├── web/          # Next.js frontend
-│   ├── api/          # FastAPI backend
-│   └── mobile/       # future field/mobile app, PWA, LINE Mini App, or wrapper
-├── packages/
-│   ├── shared/       # shared types/constants
-│   ├── ui/           # shared UI components
-│   └── config/       # shared config/schema
-├── infra/            # docker, deployment, env examples
-├── docs/             # requirements, specs, architecture, scope (source of truth)
+├── frontend/         # Next.js frontend (web)
+├── backend/          # FastAPI backend (modular monolith)
+├── packages/         # shared code (OPTIONAL — empty until web+api share จริง)
+├── infra/            # docker, compose, env examples
+├── docs/             # requirements, specs, architecture (source of truth)
 ├── scripts/          # seed, backup, maintenance
-└── data/             # demo/sample data only
+├── data/             # demo/sample data only (committed)
+└── private/          # local-only sensitive files (gitignored)
 ```
 
-> `apps/mobile/` = future-ready placeholder. **ไม่ build ใน Phase 1** (ดู [SCOPE.md](SCOPE.md))
+> **Layout:** ใช้ top-level `frontend/` + `backend/` (flat) — ชัดและตรงไปตรงมาสำหรับทีม
+> **Mobile (Phase 6):** field/mobile ยังเป็น open decision (PWA ใน `frontend/`, LINE, หรือ top-level app
+> ในอนาคต) — **ไม่ build ใน Phase 1** (ดู [SCOPE.md](SCOPE.md), [DECISIONS.md](DECISIONS.md) ADR-016)
 
 ---
 
@@ -34,25 +32,24 @@ mindkeep/
 Backend ใช้ **FastAPI** และแยก module ตาม bounded context:
 
 ```text
-apps/api/app/
-├── core/             # config, security, error codes, base utilities
-├── db/               # session, base model, migrations wiring
-├── modules/
-│   ├── auth/
-│   ├── users/
-│   ├── departments/
-│   ├── permissions/
-│   ├── documents/
-│   ├── files/
-│   ├── memory/
-│   ├── ai/
-│   ├── chat/
-│   ├── finance/      # Phase 2
-│   ├── handover/     # Phase 3
-│   ├── field/        # Phase 6
-│   ├── audit/
-│   └── admin/        # Phase 7
-└── main.py
+backend/
+├── requirements.txt
+└── app/
+    ├── main.py       # FastAPI app: GET /health + mount /api/v1
+    ├── router.py     # /api/v1 aggregator (module routers รวมที่นี่)
+    ├── core/         # config, security (JWT/hash), error envelope, logging
+    ├── db/           # engine/session, Base model, migrations/ (ยังไม่มี migration)
+    ├── shared/       # shared deps, pagination, base schema, common types
+    ├── rag/          # cross-cutting RAG pipeline: chunking · embeddings · retriever · permission filter
+    ├── jobs/         # background job system (durable, status + retry)
+    ├── storage/      # StorageService (local FS → MinIO/S3 ภายหลัง)
+    └── modules/      # bounded contexts (ดู §2.1 ไฟล์ต่อ module)
+        ├── auth/  users/  departments/  permissions/   # ✅ Phase 1
+        ├── documents/  files/  memory/  ai/  chat/  audit/  # ✅ Phase 1
+        ├── finance/      # 🔜 Phase 2
+        ├── handover/     # 🔜 Phase 3
+        ├── field/        # 🔜 Phase 6
+        └── admin/        # 🔜 Phase 7
 ```
 
 ### 2.1 Per-module file convention
@@ -61,10 +58,11 @@ apps/api/app/
 
 ```text
 modules/<name>/
-├── routes.py        # HTTP layer only — thin
-├── service.py       # business logic
+├── router.py        # HTTP layer only — thin (รับ request → เรียก service)
+├── schemas.py       # Pydantic request/response (in/out contract)
 ├── models.py        # SQLAlchemy / DB models
-├── schemas.py       # Pydantic request/response
+├── service.py       # business logic
+├── repository.py    # DB access (query/insert/update) — กัน service แตะ SQL ตรง ๆ
 ├── permissions.py   # permission checks for this module
 └── tests/
 ```
@@ -95,14 +93,15 @@ modules/<name>/
 
 ---
 
-## 4. Frontend (apps/web) — high level
+## 4. Frontend (frontend/) — high level
 
 ```text
-apps/web/
-├── app/              # Next.js routes (Home dashboard, documents, memory, chat, profile)
-├── components/       # feature + ui components (ใช้ร่วมกับ packages/ui)
-├── lib/              # api client, auth, helpers
-└── ...
+frontend/
+├── app/              # Next.js App Router routes ((auth), (workspace), Home...)
+├── features/         # feature-first modules ตาม domain (documents, memory, chat) — UI+hooks+api
+├── components/       # UI กลางใช้ซ้ำ ไม่ผูก domain
+├── lib/api/          # typed API client — ที่เดียวที่คุย backend (/api/v1/...)
+├── hooks/  types/  styles/  public/
 ```
 
 > รายละเอียด route/page ของ Phase 1 จะถูกแตกเป็น implementation batches (Step 4) — ยังไม่ scaffold ในรอบเอกสารนี้

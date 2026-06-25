@@ -103,6 +103,65 @@ Format: แต่ละข้อ = **Decision · Context · Consequence**
 - **Context:** PWA เหมาะ local-first สุด; LINE ใช้ง่ายแต่ข้อมูลผ่าน LINE infra (ระวัง sensitive)
 - **Consequence:** Phase 1 ไม่ build — แค่เก็บ data model/API ให้ยืดหยุ่นรองรับ field capture (Phase 6)
 
+## ADR-017 ✅ Alembic สำหรับ database migrations (Batch A)
+
+- **Decision:** ใช้ Alembic; config ที่ `backend/alembic.ini`, env ที่ `backend/app/db/migrations/env.py`
+- **Context:** ต้องการ schema ที่ reproducible จาก migration; repo เก่าไม่เคยรัน migration บน live DB
+- **Consequence:** DB URL อ่านจาก app settings (`DATABASE_URL`) ใน env.py (ไม่ hardcode ใน ini); รันด้วย `alembic upgrade head`
+
+## ADR-018 ✅ เก็บ enum เป็น VARCHAR + Python `Enum` (ไม่ใช่ native Postgres ENUM)
+
+- **Decision:** column ใช้ `sa.Enum(..., native_enum=False)` (เก็บเป็น VARCHAR + CHECK); ค่าจาก `app/shared/enums.py`
+- **Context:** enum หลายตัวจะเพิ่มค่า/เปลี่ยนข้ามเฟส (capabilities, job_type) — native PG ENUM ต้อง `ALTER TYPE` ซึ่งเจ็บปวด
+- **Consequence:** validation อยู่ที่ app layer; migration diff สะอาดกว่า; enums เป็น single source ตรง [DATA_MODEL.md](DATA_MODEL.md) §0
+
+## ADR-019 ✅ เปิด pgvector ผ่าน migration ไม่ใช่ app startup
+
+- **Decision:** `CREATE EXTENSION IF NOT EXISTS vector` อยู่ใน migration `0001_enable_pgvector`
+- **Context:** repo เก่าใส่ `CREATE EXTENSION` ใน `main.py` startup (freeze note flagged) — ทำให้ schema ไม่ reproducible จาก migration
+- **Consequence:** schema ทั้งหมดสร้างจาก migration ได้; memory_chunks จะใช้ vector column ใน Batch F
+
+## ADR-020 ✅ UUID primary keys + naming convention
+
+- **Decision:** PK เป็น `UUID` default `gen_random_uuid()` (PG13+ core); `TimestampMixin` (created_at/updated_at); `Base.metadata` ตั้ง naming_convention มาตรฐาน (pk/fk/ix/uq/ck)
+- **Consequence:** constraint names เสถียร → migration diff ของ Alembic อ่านง่าย; ตรงกับ field `id (uuid, pk)` ใน [DATA_MODEL.md](DATA_MODEL.md)
+
+## ADR-021 ✅ Password hashing = bcrypt (lib ตรง ไม่ผ่าน passlib) — Batch B
+
+- **Decision:** `bcrypt` package ตรง ๆ ใน `core/security.py` (`hashpw`/`checkpw`)
+- **Context:** passlib ค้างพัฒนาและชนกับ bcrypt 4.x; ไม่อยากแบก dependency ที่เปราะ
+- **Consequence:** hash/verify เรียบง่าย ควบคุมได้; ถ้าอนาคตอยากได้ argon2 ค่อยเพิ่ม pwdlib
+
+## ADR-022 ✅ JWT = PyJWT (HS256) — Batch B
+
+- **Decision:** ใช้ `PyJWT`; token มี `sub`(user id) + `role`; อายุจาก `JWT_EXPIRE_MINUTES`
+- **Context:** python-jose maintenance น้อยกว่า; PyJWT เป็น lib หลักที่ดูแลต่อเนื่อง
+- **Consequence:** stateless auth; `logout` ฝั่ง server เป็น no-op (client ทิ้ง token) — server-side revocation = future
+
+## ADR-023 ✅ Central PermissionService + capability `/permissions` endpoint — Batch B
+
+- **Decision:** authorization ตัดสินที่ `modules/permissions/service.py` ที่เดียว — `has_capability(user, cap, dept)`,
+  `allowed_departments(user)`; เพิ่ม endpoint `/api/v1/permissions` (grant/revoke/list) ที่ [API_SPEC.md](API_SPEC.md)
+- **Context:** เดิม API_SPEC มี module `permissions` แต่ไม่มี endpoint (code review flag); และต้องมีจุดเดียวสำหรับ "permission before retrieval" (ADR-007)
+- **Consequence:** owner_manager → ผ่านทุก management cap (audited); department_lead → `memory:approve` ในแผนกตัวเองโดยปริยาย;
+  ที่เหลือเป็น explicit grant (global หรือ scoped department). RAG (Batch H) จะเรียก `allowed_departments` ก่อน query
+
+## ADR-024 ✅ StorageService layout + upload policy — Batch C
+
+- **Decision:** ไฟล์ผ่าน `app/storage/StorageService` เท่านั้น; path = `<department_id>/<uuid><ext>` ใต้
+  `STORAGE_LOCAL_PATH` (= `private/uploads`, gitignored); checksum = **SHA-256**; allowlist + max 25MB ที่ `app/storage/policy.py`
+- **Context:** ต้องเปลี่ยน backend เป็น MinIO/S3 ได้ภายหลัง (ADR-011); ไฟล์จริงต้องไม่หลุดเข้า git; รองรับเฉพาะชนิดใน [SCOPE.md §3](SCOPE.md)
+- **Consequence:** uploaded document = read-only (แก้ไม่ได้, Phase 1); แก้ note → สร้าง `document_versions` ใหม่ ไม่ทับ;
+  approve→memory **ยังไม่ทำใน Batch C** (ไป Batch G); activity/audit ของ document action ไป Batch I
+
+## ADR-025 ✅ Job engine = DB-backed polling worker — Batch D
+
+- **Decision:** queue เก็บใน Postgres (`jobs` table); worker (`python -m app.jobs.worker`) poll ด้วย
+  `SELECT ... WHERE status='queued' FOR UPDATE SKIP LOCKED LIMIT 1` แล้วรัน handler ที่ register ไว้
+- **Context:** local-first/on-prem SME — อยากลด service ที่ต้องติดตั้ง/ดูแล (เทียบ Redis+RQ / Celery); ขยายเป็น engine อื่นได้ผ่าน handler registry
+- **Consequence:** รัน worker หลายตัวพร้อมกันได้ (SKIP LOCKED); retry อัตโนมัติจนถึง `max_attempts` แล้วเป็น `failed`;
+  `POST /jobs/{id}/retry` รีเซ็ตเป็น queued; handlers จริง (extract/ocr/summary/embed) มาใน Batch E/F; compose มี service `worker`
+
 ---
 
 ## Open Decisions to Revisit (assumptions ไม่ใช่มติสุดท้าย)

@@ -1,0 +1,18 @@
+name: mindkeep
+
+# Optional local-AI overlay. Run together with the base file:
+#   docker compose -f docker-compose.yml -f docker-compose.ollama.yml --env-file .env up --build
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ../private/ollama:/root/.ollama
+
+  api:
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+    depends_on:
+      - ollama

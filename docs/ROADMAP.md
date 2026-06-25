@@ -14,7 +14,7 @@
 
 | Phase | ชื่อ | สถานะ |
 |---|---|---|
-| 1 | Document + Work Memory Core | 📋 Planned |
+| 1 | Document + Work Memory Core | 🔄 In Progress |
 | 2 | Finance Workspace | 📋 Planned |
 | 3 | Handover / New Employee Continuity | 📋 Planned |
 | 4 | Department Workspace Expansion | 📋 Planned |
@@ -22,8 +22,16 @@
 | 6 | Field & Production Mobile / Mini App / LINE | 📋 Planned |
 | 7 | Admin / Owner Command Center | 📋 Planned |
 
-> สถานะปัจจุบัน: **Step 1–2 (docs source of truth + Master Prompt) ✅ DONE** — ยังไม่มี phase ไหนเริ่ม code.
-> งานถัดไปคือ **Step 3** (repo skeleton + config) ตาม [MASTER_PROMPT.md](MASTER_PROMPT.md)
+> สถานะปัจจุบัน: **Step 1–3 ✅ DONE** (docs + Master Prompt + monorepo skeleton ที่ boot ได้).
+> **Step 4 กำลังทำ:**
+> - **Batch A (DB foundation) ✅ DONE** — Alembic + shared enums + base/mixins + pgvector migration 0001
+> - **Batch B (auth + users + departments + permissions) ✅ DONE** — JWT login, bcrypt, central PermissionService,
+>   models + migration 0002, `/auth /users /departments /permissions` ต่อเข้า `/api/v1`, dev seed
+> - **Batch C (documents + files + StorageService) ✅ DONE** — Document/DocumentVersion/File models + migration 0003,
+>   StorageService (local FS, sha256), upload/preview-download/CRUD/submit/lock/delete, permission-aware list, `/documents /files`
+> - **Batch D (background job system) ✅ DONE** — `jobs` table + migration 0004, DB-backed worker (FOR UPDATE SKIP LOCKED),
+>   handler registry, retry/max_attempts, `/jobs` (list/get/retry) per-user scoped, compose `worker` service
+> งานถัดไป = **Batch E** (extraction + summary pipeline — handlers ตัวจริง)
 
 ---
 
@@ -51,12 +59,16 @@
 **Phase 1 build order** (จาก MASTER_PROMPT / Spec §17 — อย่าข้าม):
 
 ```text
-1.  Create repo structure              ◀── ⏭ NEXT (Step 3 — monorepo tree not built yet)
-2.  Create docs source of truth        ◀── ✅ DONE (Step 1–2 completed: 10 docs + MASTER_PROMPT)
-3.  Setup backend FastAPI skeleton     ◀── ⏭ NEXT (Step 3)
-4.  Setup frontend Next.js skeleton    ◀── ⏭ NEXT (Step 3)
-5.  Setup PostgreSQL + migrations
-6.  Create auth/users/departments/permissions
+1.  Create repo structure              ◀── ✅ DONE (frontend/ backend/ data/ flat monorepo)
+2.  Create docs source of truth        ◀── ✅ DONE (10 docs + MASTER_PROMPT)
+3.  Setup backend FastAPI skeleton     ◀── ✅ DONE (health + /api/v1 mount)
+4.  Setup frontend Next.js skeleton    ◀── ✅ DONE (placeholder Home)
+5.  Setup PostgreSQL + migrations      ◀── 🔄 Batch A DONE (Alembic + enums + pgvector mig); tables per batch
+6.  Create auth/users/departments/permissions   ◀── ✅ DONE (Batch B — migration 0002)
+7.  Create documents/files module      ◀── ✅ DONE (Batch C — migration 0003)
+8.  Create StorageService              ◀── ✅ DONE (Batch C — local FS + sha256)
+9.  Create background job system       ◀── ✅ DONE (Batch D — DB worker, migration 0004)
+10. Create extraction/summary pipeline ◀── ⏭ NEXT (Batch E)
 7.  Create documents/files module
 8.  Create StorageService
 9.  Create background job system

@@ -43,8 +43,16 @@ POST /{id}/deactivate                  [requires users:manage]
 GET  /             # list departments user can see
 GET  /{id}
 POST /             # create             [requires departments:manage]
-PATCH /{id}        #                    [requires departments:manage]
 ```
+
+### Permissions — `/api/v1/permissions`  (capability grants)
+```text
+GET    /?user_id=  # list a user's capability grants   [requires roles:manage]
+POST   /           # grant a capability (optional department scope)  [requires roles:manage]
+DELETE /{grant_id} # revoke a grant                     [requires roles:manage]
+```
+> capabilities: memory:approve, shared_knowledge:approve, users:manage, departments:manage,
+> roles:manage, system:settings, audit:view, finance:* (ดู DATA_MODEL §permission_grants)
 
 ### Documents — `/api/v1/documents`
 ```text
@@ -143,17 +151,21 @@ Phase 7 Admin    : /api/v1/admin/...               (overview, users, audit, syst
 
 ## Endpoint ↔ Module Map
 
-| Prefix | Backend module ([PROJECT_MAP.md](PROJECT_MAP.md)) | Phase |
+Status: 🟢 built · 📋 Phase 1 planned · 🔜 later phase
+
+| Prefix | Backend module ([PROJECT_MAP.md](PROJECT_MAP.md)) | Status |
 |---|---|---|
-| `/auth` | `modules/auth` | 1 ✅ |
-| `/users` | `modules/users` | 1 ✅ |
-| `/departments` | `modules/departments` | 1 ✅ |
-| `/documents`, `/files` | `modules/documents`, `modules/files` | 1 ✅ |
-| `/memory` | `modules/memory` | 1 ✅ |
-| `/ai`, `/chat` | `modules/ai`, `modules/chat` | 1 ✅ |
-| `/activities`, `/jobs` | `modules/audit` / core jobs | 1 ✅ |
-| `/audit` | `modules/audit` | 1 ✅ |
-| `/finance*`, `/ocr` | `modules/finance` | 2 🔜 |
-| `/handover` | `modules/handover` | 3 🔜 |
-| `/field` | `modules/field` | 6 🔜 |
-| `/admin` | `modules/admin` | 7 🔜 |
+| `/auth` | `modules/auth` | 🟢 Batch B |
+| `/users` | `modules/users` | 🟢 Batch B |
+| `/departments` | `modules/departments` | 🟢 Batch B |
+| `/permissions` | `modules/permissions` | 🟢 Batch B |
+| `/documents`, `/files` | `modules/documents`, `modules/files` | 🟢 Batch C (approve→memory pending Batch G) |
+| `/memory` | `modules/memory` | 📋 Phase 1 (Batch F/G) |
+| `/ai`, `/chat` | `modules/ai`, `modules/chat` | 📋 Phase 1 (Batch H) |
+| `/jobs` | `app/jobs` (core) | 🟢 Batch D |
+| `/activities` | `modules/audit` | 📋 Phase 1 (Batch I) |
+| `/audit` | `modules/audit` | 📋 Phase 1 (Batch I) |
+| `/finance*`, `/ocr` | `modules/finance` | 🔜 Phase 2 |
+| `/handover` | `modules/handover` | 🔜 Phase 3 |
+| `/field` | `modules/field` | 🔜 Phase 6 |
+| `/admin` | `modules/admin` | 🔜 Phase 7 |

@@ -1,0 +1,47 @@
+# ── Python (backend) ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node / Next.js (frontend) ──────────────────────────────────
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# ── Env / secrets ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+infra/.env
+!infra/.env.example
+
+# ── Local-only sensitive data (NEVER commit) ───────────────────
+# whole private/ is ignored except its README + .gitkeep
+/private/*
+!/private/.gitkeep
+!/private/README.md
+# legacy/runtime upload paths
+backend/app/uploads/
+**/uploads/
+
+# ── Tooling / OS ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# ── graphify output (generated knowledge graph) ────────────────
+graphify-out/

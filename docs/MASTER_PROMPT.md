@@ -43,11 +43,11 @@ authoritative; do not invent product decisions:
 Create the project SKELETON and configuration only. Produce a repo that *boots empty* but is
 correctly structured. Specifically:
 
-1. **Monorepo tree** exactly as docs/PROJECT_MAP.md:
-   apps/{web,api,mobile}, packages/{shared,ui,config}, infra/, docs/ (already exists),
-   scripts/, data/. Add a short README.md in each top-level app/package describing its purpose.
+1. **Monorepo tree** exactly as docs/PROJECT_MAP.md (flat layout):
+   frontend/, backend/, packages/ (optional), infra/, docs/ (already exists),
+   scripts/, data/, private/. Add a short README.md in each top-level folder describing its purpose.
 
-2. **Backend skeleton** (apps/api, FastAPI, Python 3.12):
+2. **Backend skeleton** (backend/, FastAPI, Python 3.12):
    - app/main.py with a health route `GET /health` and `/api/v1` router mount only.
    - app/core/ (config via env, error envelope stub), app/db/ (session/base wiring, NO migrations).
    - Module folders under app/modules/ for ALL modules in PROJECT_MAP.md §2 (so the tree matches it):
@@ -59,12 +59,12 @@ correctly structured. Specifically:
    - pyproject.toml (or requirements.txt) with FastAPI, uvicorn, SQLAlchemy, psycopg, pgvector,
      pydantic-settings — pinned, but no business deps beyond skeleton.
 
-3. **Frontend skeleton** (apps/web, Next.js + TypeScript):
+3. **Frontend skeleton** (frontend/, Next.js + TypeScript):
    - App Router with a single placeholder Home page only. No feature pages, no API wiring.
    - package.json named "mindkeep-web" (NEVER "longrian-*").
 
 4. **Base config**:
-   - `.gitignore` at repo root that INCLUDES `apps/api/app/uploads/`, `.env`, `node_modules/`,
+   - `.gitignore` at repo root that INCLUDES `backend/app/uploads/`, `private/*`, `.env`, `node_modules/`,
      `__pycache__/`, `.venv/`, build dirs.
    - `.env.example` (DB url for postgres, OLLAMA host, storage path) — no real secrets.
    - infra/docker-compose.yml: postgres service on image `pgvector/pgvector:pg16`, api, web.
@@ -90,8 +90,8 @@ correctly structured. Specifically:
 - Docs are part of "done"
 
 ### Definition of done for THIS run
-- `apps/api` boots and `GET /health` returns 200 with no business logic.
-- `apps/web` builds and serves a placeholder Home.
+- `backend/` boots and `GET /health` returns 200 with no business logic.
+- `frontend/` builds and serves a placeholder Home.
 - `docker compose up` brings up postgres (pgvector image) + api + web.
 - Tree matches docs/PROJECT_MAP.md; no LongRian naming anywhere; uploads/ is gitignored.
 - Then STOP and summarize what was created + propose the Step 4 batch plan (do not start it).

@@ -139,11 +139,14 @@ citations (jsonb — source refs) · created_at
 
 ### Jobs & Audit
 
-**jobs** ✅  (background job records — durable)
+**jobs** ✅  (background job records — durable; Batch D)
 ```text
-id (uuid, pk) · type (job_type enum) · status (job_status enum) · target_type · target_id ·
-attempts (int) · error (text, nullable) · created_at · updated_at
+id (uuid, pk) · type (job_type) · status (job_status) · target_type · target_id ·
+payload (jsonb, nullable) · attempts (int) · max_attempts (int, default 3) · error (text, nullable) ·
+created_by (fk users, nullable) · created_at · updated_at
 ```
+> worker อ้าง status (index) + `FOR UPDATE SKIP LOCKED` เพื่อ claim งานแบบ concurrency-safe;
+> `created_by` ให้ user เห็น job ของตัวเอง (owner_manager/`audit:view` เห็นทั้งหมด)
 
 **audit_logs** ✅  (sensitive actions: approval, cross-dept access, finance confirm)
 ```text
