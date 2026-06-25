@@ -1,0 +1,379 @@
+# MindKeep Requirement Collection
+
+## Round 1 — Product Goal & Scope
+
+### 1. Product Name
+
+Product ใหม่ใช้ชื่อว่า **MindKeep**
+
+MindKeep คือระบบ AI workplace memory สำหรับองค์กร ไม่ใช่ LongRian เวอร์ชันใหม่ และไม่ใช่การซ่อม repo เก่า
+
+ชื่อ **LongDuem / ลองดื่ม** จะใช้เป็น demo company หรือ case study โดยจำลองว่าเป็นบริษัทสวนมะพร้าวและขายน้ำมะพร้าวที่นำ MindKeep ไปใช้จริงภายในองค์กร
+
+Naming rule:
+
+```text
+MindKeep = product / system
+LongDuem = demo company / customer case
+```
+
+---
+
+### 2. Core Product Definition
+
+MindKeep คือสถานที่ทำงานภายในองค์กรที่ใช้ AI ช่วยจัดเก็บ จัดการ เรียบเรียง ค้นคืน และสรุปความรู้จากงานที่เกิดขึ้นจริงของพนักงาน
+
+ระบบไม่ได้เป็นแค่ chatbot และไม่ได้เป็นแค่ document storage แต่เป็นระบบที่ทำให้งานประจำวันของพนักงานกลายเป็นความรู้ขององค์กร เช่น เอกสาร ไฟล์ โน้ต การแก้ไขงาน การอนุมัติ activity การตัดสินใจ และบริบทของงาน
+
+ข้อมูลเหล่านี้จะถูกจัดเก็บเป็น Work Memory เพื่อให้พนักงานคนใหม่หรือคนในแผนกเดียวกันสามารถค้นคืนและทำงานต่อได้ผ่าน AI/RAG ตามสิทธิ์ที่ได้รับ
+
+One-sentence definition:
+
+```text
+MindKeep is a local-first AI workplace memory system that turns real employee work into searchable organizational knowledge while preserving department-level privacy.
+```
+
+---
+
+### 3. What MindKeep Is
+
+MindKeep is:
+
+```text
+- Internal AI workplace
+- Document and file workspace
+- Work Memory system
+- Permission-aware RAG system
+- Department-based knowledge assistant
+- Handover and continuity support system
+- Local-first/on-premise AI system for SMEs
+```
+
+MindKeep should help organizations:
+
+```text
+- Keep knowledge when employees leave
+- Let new employees understand previous work faster
+- Organize documents and work history
+- Search old work through AI
+- Summarize documents and activities
+- Reuse old work safely
+- Keep sensitive company data inside the company
+```
+
+---
+
+### 4. What MindKeep Is Not
+
+MindKeep is not:
+
+```text
+- A normal chatbot
+- A public SaaS AI tool
+- A Google Docs replacement in Phase 1
+- A full ERP/accounting system in Phase 1
+- A system that lets AI decide permissions
+- A system that sends internal company data to external AI APIs
+- A system that automatically trusts AI output without human review
+```
+
+---
+
+### 5. Deployment Direction
+
+MindKeep เวอร์ชันแรกจะเป็นระบบแบบ **local-first / on-premise per company**
+
+แต่ละบริษัทจะมี instance ของตัวเอง เช่น:
+
+```text
+- Company server
+- Mini server
+- Local workstation
+- Notebook used as internal server
+```
+
+MindKeep ต้องสามารถติดตั้งให้แต่ละบริษัทแยกกันได้ โดยข้อมูลของแต่ละบริษัทอยู่ใน environment ของบริษัทนั้นเอง
+
+Phase 1 ยังไม่ใช่ multi-tenant SaaS ที่หลายบริษัทใช้ database/shared backend เดียวกัน
+
+---
+
+### 6. Data Privacy Rule
+
+หลักที่สำคัญที่สุดของ MindKeep คือ:
+
+```text
+Sensitive company data must not leave the company by default.
+```
+
+ข้อมูลที่ต้องอยู่ภายในระบบของบริษัท:
+
+```text
+- Customer data
+- Finance data
+- Supplier data
+- Internal documents
+- Confidential files
+- Employee work history
+- Work Memory
+- RAG context
+- Uploaded files
+- OCR extracted text
+- Chat history
+```
+
+AI core ต้องใช้ local model ผ่าน local runtime เช่น Ollama
+
+External AI APIs เช่น OpenAI, Anthropic, Gemini หรือ cloud LLM อื่น ๆ ไม่ใช่ default path ของระบบ และห้ามใช้กับข้อมูลภายในบริษัท เว้นแต่เจ้าของระบบอนุญาตชัดเจนเป็นกรณีพิเศษ
+
+---
+
+### 7. AI Direction
+
+MindKeep ใช้ AI เพื่อช่วยค้น จัดการ สรุป และอธิบายข้อมูลขององค์กร
+
+AI ต้องทำงานภายใต้ข้อจำกัดเหล่านี้:
+
+```text
+- AI must obey backend permissions
+- AI must retrieve only allowed documents and memory
+- AI must cite or link sources when answering from company data
+- AI must not silently modify approved work
+- AI must not approve its own output
+- AI must not expose cross-department confidential data
+```
+
+AI runtime หลักใน MVP คือ Ollama local model
+
+ระบบไม่ควร fix model เดียวตลอดไป เพราะแต่ละบริษัทมี hardware ไม่เท่ากัน แต่ Phase demo สามารถใช้ model เบาเพื่อให้รันได้จริง
+
+---
+
+### 8. Department and Permission Concept
+
+MindKeep เป็นระบบแบบ department-based
+
+พนักงานแต่ละคนจะอยู่ในแผนกหนึ่งหรือหลายแผนก และเห็นข้อมูลตาม role/permission ของตัวเอง
+
+ตัวอย่างแผนกสำหรับ LongDuem:
+
+```text
+- Finance
+- Marketing
+- Field / Production
+- Admin
+```
+
+หลัก permission:
+
+```text
+- พนักงานทั่วไปเห็นเฉพาะข้อมูลที่ตนมีสิทธิ์
+- พนักงานแผนกหนึ่งไม่เห็นข้อมูลงานจริงของอีกแผนกโดย default
+- Admin/Owner อาจมีสิทธิ์ข้ามแผนกตาม policy
+- Shared Knowledge ใช้ข้ามแผนกได้เฉพาะข้อมูลที่ผ่าน approval
+- AI ต้องใช้ permission เดียวกับระบบเอกสาร ไม่ใช่สิทธิ์พิเศษ
+```
+
+---
+
+### 9. Phase Order
+
+MindKeep จะพัฒนาเป็นลำดับดังนี้:
+
+```text
+1. Document + Work Memory Core
+2. Finance Workspace
+3. Handover / New Employee Continuity
+4. Department Workspace
+5. AI Chat Experience
+6. Field & Production Workspace
+7. Admin Command Center
+```
+
+ลำดับนี้มีเป้าหมายเพื่อสร้างแกนระบบให้แข็งก่อน แล้วค่อยขยายไปเป็น workspace ของแต่ละแผนก
+
+---
+
+### 10. Phase 1 Direction
+
+Phase 1 คือ **Document + Work Memory Core**
+
+แนวทางคือ Hybrid:
+
+```text
+- File library
+- File upload
+- File preview
+- Simple note/document editor
+- Metadata/tag/department ownership
+- Extraction
+- AI summarization
+- Review before memory
+- Work Memory approval
+- Permission-aware RAG
+- Source citation
+- Simple version history
+```
+
+Phase 1 ยังไม่ทำ full Google Docs-like editor
+
+---
+
+### 11. Phase 1 File Support
+
+Phase 1 ต้องรองรับไฟล์เหล่านี้:
+
+```text
+- PDF
+- JPG
+- JPEG
+- PNG
+- WEBP
+- DOCX
+- XLSX
+- CSV
+- In-app simple note/document
+```
+
+ทุกไฟล์ที่รองรับต้องมี preview screen
+
+Preview behavior:
+
+```text
+PDF = PDF preview
+Images = image preview
+DOCX = read-only document preview
+CSV = table preview
+XLSX = sheet/table preview
+In-app note/document = native preview/edit screen
+```
+
+Phase 1 editing scope:
+
+```text
+- Edit in-app simple note/document
+- Uploaded PDF/DOCX/XLSX/CSV/images are read-only
+- Full editor and spreadsheet editor are later phases
+```
+
+---
+
+### 12. Phase 1 AI Extraction and RAG
+
+Phase 1 ต้องให้ AI summarize และ RAG ใช้ข้อมูลจากไฟล์ที่รองรับได้
+
+Processing rules:
+
+```text
+PDF:
+  extract text, summarize, embed after approval
+
+DOCX:
+  extract text, summarize, embed after approval
+
+CSV:
+  parse headers/sample rows, summarize dataset, embed summary after approval
+
+XLSX:
+  parse sheets/headers/sample rows, summarize workbook, embed summary after approval
+
+Images:
+  OCR if image contains text/document/receipt/form/label/note
+  summarize extracted text if available
+  store image metadata even if OCR text is empty
+  embed OCR summary after approval
+
+In-app note/document:
+  summarize directly
+  embed text/summary after approval
+```
+
+AI answers that use document/memory data must include source citation or source link.
+
+---
+
+### 13. Review Before Memory
+
+MindKeep must not automatically turn uploaded files into searchable organizational memory.
+
+Flow:
+
+```text
+1. User uploads file or creates note
+2. System stores original file/document
+3. System extracts text or structured content
+4. System generates summary and metadata
+5. System shows review screen
+6. Authorized reviewer checks extracted text, summary, tags, department, visibility, and sensitivity
+7. Reviewer approves or rejects
+8. Approved content is embedded into Work Memory
+9. Rejected content stays as document/file but is not searchable by AI/RAG
+```
+
+Only these roles can approve content into Work Memory:
+
+```text
+- department_lead
+- assigned_reviewer
+- admin
+- owner / super_admin
+```
+
+Normal employees can upload, create notes, preview their own files, and submit for review, but cannot approve content into shared department memory by themselves.
+
+---
+
+### 14. Phase 1 Out of Scope
+
+Phase 1 does not include:
+
+```text
+- Full Google Docs-level editor
+- Real-time collaborative editing
+- Full spreadsheet editor
+- Complex comments workflow
+- Notification delivery system
+- Multi-tenant SaaS
+- Mobile app
+- Social publishing
+- Full ERP/accounting replacement
+- Automatic accounting/tax filing
+- Cross-department unrestricted AI search
+- External cloud AI processing of internal documents
+```
+
+---
+
+### 15. Success Criteria for Round 1 Scope
+
+Phase 1 is successful if:
+
+```text
+- A user can log in to MindKeep
+- A user can access their department workspace
+- A user can upload supported files
+- A user can preview supported files
+- A user can create a simple note/document
+- The system can extract and summarize uploaded content
+- Extracted content requires review before becoming Work Memory
+- A department lead/reviewer can approve content into Work Memory
+- AI can answer from approved Work Memory only
+- AI response includes source reference
+- A user cannot retrieve documents or memory from unauthorized departments
+- The system can run locally without sending sensitive data to external AI
+```
+
+---
+
+### 16. Assumptions to Revisit Later
+
+These are default assumptions, not final decisions:
+
+```text
+- Phase 1 demo departments: Finance, Marketing, Field/Production, Admin
+- Legal starts as shared compliance knowledge, not full workspace
+- Shared Knowledge exists but requires approval
+- AI model changes through config first, Admin UI later
+- System should work over LAN when internet is unavailable
+- Visibility levels: private, department, shared_internal, restricted
+```

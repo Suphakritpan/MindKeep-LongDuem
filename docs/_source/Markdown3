@@ -1,0 +1,479 @@
+# MindKeep Requirement Collection
+
+## Round 3 — Feature Map
+
+### 1. Main App Entry
+
+หลัง Login ผู้ใช้จะเข้า **Home / Workplace Dashboard** แบบรวมก่อน ไม่เข้าแชทหรือแผนกใดแผนกหนึ่งทันที
+
+Main layout:
+
+```text
+Home / Dashboard
+├── Sidebar
+├── Top bar
+├── Recent work
+├── Recent documents
+├── Pending reviews
+├── Department shortcuts
+├── AI quick access
+└── User profile menu
+```
+
+เหตุผลคือ MindKeep ต้องรู้สึกเป็น “สถานที่ทำงาน” ไม่ใช่แค่หน้าแชทหรือระบบเอกสารหน้าเดียว
+
+---
+
+### 2. Profile / User Menu
+
+Profile เป็นเมนูจัดการตัวผู้ใช้และบัญชี
+
+Core functions:
+
+```text
+Account & Profile
+- ดูโปรไฟล์
+- แก้ไขชื่อ-นามสกุล
+- เปลี่ยนรูปโปรไฟล์
+- แก้เบอร์โทรศัพท์
+- เปลี่ยนอีเมลหลัก
+- เปลี่ยนรหัสผ่าน
+- ดูแผนกและ role ของตัวเอง
+- เปลี่ยน active department ถ้ามีมากกว่า 1 แผนก
+```
+
+Security functions:
+
+```text
+Security
+- 2FA
+- ดู session/device ที่ login
+- logout
+- logout all devices
+```
+
+Preferences:
+
+```text
+Preferences
+- ภาษา
+- theme: light/dark
+- notification preferences
+- privacy settings
+```
+
+Support:
+
+```text
+Support
+- Help Center / FAQ
+- คู่มือการใช้งาน
+- ติดต่อผู้ดูแลระบบ
+- Terms / Privacy Policy
+```
+
+หมายเหตุสำหรับ Phase 1:
+
+```text
+Linked social accounts, subscription, wallet, payment cards, KYC เต็มระบบ
+ยังไม่ใช่ core ของ MindKeep เวอร์ชัน on-prem ภายในองค์กร
+ให้เก็บเป็น future/optional เฉพาะกรณีจำเป็น
+```
+
+---
+
+### 3. Document Feature
+
+Documents คือแกนหลักของ MindKeep เพราะเอกสารและไฟล์คือจุดเริ่มของ Work Memory
+
+Feature functions:
+
+```text
+Documents
+- upload file
+- preview all supported files
+- create simple note/document
+- document editor แบบเต็มใน phase หลัง
+- metadata
+- tag / category
+- owner
+- department
+- visibility
+- version history
+- lock / unlock
+- delete / restore
+- submit for memory review
+- approve to Work Memory
+- AI summarize
+- AI suggest title/tags
+- AI suggest edit
+- use as template
+- comments
+- export PDF/DOCX later
+```
+
+Phase 1 focus:
+
+```text
+- upload
+- preview
+- simple note
+- extraction
+- summary
+- review before memory
+- approve to Work Memory
+- source citation
+```
+
+---
+
+### 4. AI Chat Feature
+
+AI Chat ต้องให้ความรู้สึกคล้าย ChatGPT แต่เป็น AI ภายในองค์กรที่ตอบจากข้อมูลจริงตามสิทธิ์
+
+Feature functions:
+
+```text
+AI Chat
+- new chat
+- chat history
+- rename chat
+- delete/archive chat
+- active department scope
+- attach document/file
+- source citation
+- preview cited source
+- model status
+- streaming response
+- regenerate answer
+- copy answer
+- save answer as note
+- create task/activity from answer
+- clear chat
+```
+
+กฎสำคัญ:
+
+```text
+AI Chat ต้องไม่ค้นทุกแผนกโดย default
+AI ต้องตอบจาก shared_knowledge + department memory ที่ user มีสิทธิ์เท่านั้น
+```
+
+Phase 1/early version:
+
+```text
+- new chat
+- history
+- department scope
+- source citation
+- model status
+- basic attachment
+```
+
+---
+
+### 5. Work Memory + Activity Timeline
+
+MindKeep ควรมีทั้งหน้า **Memory** และ **Activity Timeline** แยกกัน
+
+เหตุผลคือผู้ใช้ต้องเห็นได้ว่า “งานถูกเก็บแล้ว” ไม่ใช่รู้สึกว่า AI แอบจำอยู่หลังบ้าน
+
+Memory page:
+
+```text
+Memory
+- รายการ memory ที่ผ่าน approval แล้ว
+- source document
+- summary
+- tags
+- department
+- created by
+- approved by
+- created date
+- visibility
+- search/filter
+- open source
+```
+
+Activity Timeline:
+
+```text
+Activity Timeline
+- ใครทำอะไร
+- ทำในแผนกไหน
+- เกิดจาก document / chat / OCR / finance / field work อะไร
+- สถานะ pending / approved / rejected / locked
+- link กลับไปยังเอกสารหรือ record ต้นทาง
+```
+
+ความต่าง:
+
+```text
+Activity = ประวัติการทำงานที่เกิดขึ้นจริง
+Memory = ข้อมูลที่ผ่าน approval แล้วและ AI ใช้ค้นตอบได้
+```
+
+---
+
+### 6. Finance Workspace
+
+Finance ไม่ควรเป็นฟีเจอร์แยกกระจัดกระจาย แต่ควรเป็น workspace ที่เชื่อมข้อมูลเป็น flow เดียว
+
+Finance modules ที่ควรมี:
+
+```text
+Finance Workspace
+├── Finance Dashboard
+├── Receipt / Bill OCR
+├── OCR Review
+├── Income & Expense Records
+├── Vendor Management
+├── Category Management
+├── VAT / Tax Summary
+├── Monthly Summary
+├── Cash Flow Summary
+├── Import CSV/XLSX
+├── Export Report
+├── Approval Queue
+├── Duplicate Receipt Detection
+└── AI Finance Explanation
+```
+
+การเชื่อมข้อมูลที่ควรออกแบบ:
+
+```text
+Receipt/Bill
+→ OCR Extraction
+→ Human Review
+→ Finance Record
+→ Vendor / Category
+→ Monthly Summary
+→ VAT / Tax Summary
+→ Work Memory
+→ AI Finance Answer
+```
+
+แนวทางยุบ/รวมให้ใช้ง่าย:
+
+```text
+1. รวม Receipt OCR + OCR Review + Create Finance Record เป็น flow เดียว
+2. รวม Vendor + Category suggestion ไว้ในหน้าตรวจ OCR
+3. รวม Monthly Summary + Cash Flow + VAT เป็น Finance Dashboard เดียว
+4. ให้ Finance Record ทุกอัน link กลับไปหา source receipt
+5. ให้ AI อธิบายตัวเลขจาก records จริง แต่ไม่ให้ AI คำนวณเอง
+6. ให้ approval queue แสดงเฉพาะรายการที่ต้องตัดสินใจ
+```
+
+ตัวอย่าง user flow:
+
+```text
+อัปโหลดใบเสร็จ
+→ ระบบ OCR
+→ ระบบแนะนำ vendor/category/tax
+→ ผู้ใช้ตรวจ
+→ หัวหน้า/ผู้มีสิทธิ์ confirm
+→ สร้าง finance record
+→ เข้า dashboard
+→ เข้า Work Memory
+→ AI ตอบย้อนหลังพร้อม source ได้
+```
+
+---
+
+### 7. Field & Production Workspace
+
+Field & Production เหมาะกับแผนกที่ต้องลงหน้างานจริง เช่น แผนกสวน ฝ่ายผลิต คลัง หรือทีมตรวจพื้นที่
+
+แนวคิดหลัก:
+
+```text
+มอบหมายงานจากบริษัท
+→ เจ้าหน้าที่ออกหน้างาน
+→ บันทึกข้อมูล/ถ่ายรูปในมือถือ
+→ เก็บใน mini app แบบ local/offline first
+→ กลับถึงที่ทำงานหรือเชื่อม LAN
+→ sync เข้า server หลัก
+→ หัวหน้าแผนก review
+→ approve เข้า Work Memory
+```
+
+Field functions:
+
+```text
+Field / Production
+- field task assignment
+- mobile mini app
+- offline capture
+- photo capture
+- field note
+- harvest record
+- production batch record
+- raw material record
+- quantity / yield record
+- damaged / waste record
+- issue/problem report
+- GPS/location optional
+- timestamp
+- assigned staff
+- sync status
+- review after sync
+- approve to Work Memory
+```
+
+UX หลักของมือถือ:
+
+```text
+- หน้าจอใหญ่ กดง่าย
+- ฟอร์มสั้น
+- ถ่ายรูปเร็ว
+- ใช้ dropdown ลดการพิมพ์
+- auto timestamp
+- save draft/offline
+- sync later
+- แสดงสถานะ: ยังไม่ส่ง / ส่งแล้ว / รอตรวจ / เข้า memory แล้ว
+```
+
+ตัวอย่าง LongDuem use cases:
+
+```text
+สวน:
+- วันนี้เก็บมะพร้าวกี่ลูก
+- พื้นที่ไหนมีปัญหา
+- รูปต้นมะพร้าว/ผลผลิต
+- คนงานคนไหนรับผิดชอบ
+- ปัญหาโรคพืชหรือสภาพอากาศ
+
+ฝ่ายผลิต:
+- ล็อตผลิตน้ำมะพร้าว
+- จำนวนผลิต
+- ของเสีย
+- วัตถุดิบที่ใช้
+- ปัญหาเครื่องจักร
+- รูปหน้างาน
+```
+
+กฎสำคัญ:
+
+```text
+ข้อมูลจากมือถือยังไม่เข้า Work Memory ทันที
+ต้อง sync เข้า server หลักและผ่าน review ก่อน
+```
+
+---
+
+### 8. Department Workspace
+
+Department Workspace คือพื้นที่รวมของแต่ละแผนก
+
+Common department modules:
+
+```text
+Department Workspace
+├── Dashboard
+├── Documents
+├── Files
+├── Notes
+├── Work Memory
+├── Activity Timeline
+├── AI Assistant Panel
+├── Pending Reviews
+├── Approvals
+└── Department Settings
+```
+
+แนวคิด:
+
+```text
+ทุกแผนกใช้ pattern เดียวกัน
+แต่แต่ละแผนกมี tools เฉพาะของตัวเอง
+```
+
+ตัวอย่าง:
+
+```text
+Finance:
+  receipt OCR, finance records, VAT
+
+Field/Production:
+  field task, mobile capture, production batch
+
+Marketing:
+  campaign document, content draft, asset library
+
+Admin/Owner:
+  users, audit, health, overview
+```
+
+---
+
+### 9. Admin Command Center
+
+Admin Command Center สำหรับ owner/manager ใช้ดูภาพรวมทั้งองค์กร
+
+Feature functions:
+
+```text
+Admin Command Center
+- company overview
+- users
+- departments
+- roles/permissions
+- pending reviews
+- audit logs
+- activity overview
+- Work Memory overview
+- system health
+- AI model status
+- storage status
+- backup status
+- handover management
+```
+
+หลักสำคัญ:
+
+```text
+owner/manager เห็นภาพรวมได้
+แต่การเข้าถึงข้อมูล sensitive ข้ามแผนกต้องถูก audit
+```
+
+---
+
+### 10. Feature Priority
+
+ลำดับความสำคัญของฟีเจอร์:
+
+```text
+Phase 1:
+- Home / Dashboard shell
+- Profile basic
+- Documents
+- File preview
+- Simple note
+- Extraction/Summary
+- Review before memory
+- Work Memory
+- Activity Timeline
+- Basic AI Chat with source citation
+
+Phase 2:
+- Finance Workspace
+- OCR Review
+- Finance Records
+- Finance Dashboard
+
+Phase 3:
+- Handover
+
+Phase 4:
+- Department Workspace expansion
+- AI Assistant Panel per workspace
+
+Phase 5:
+- Full AI Chat Experience
+
+Phase 6:
+- Field & Production mobile mini app + sync
+
+Phase 7:
+- Admin Command Center
+```

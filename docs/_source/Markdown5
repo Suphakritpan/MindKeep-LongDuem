@@ -1,0 +1,288 @@
+# MindKeep Requirement Collection
+
+## Round 5 — Architecture & Module Boundary
+
+### 1. Repo Structure
+
+MindKeep repo ใหม่จะใช้ monorepo structure
+
+```text
+mindkeep/
+├── apps/
+│   ├── web/          # Next.js frontend
+│   ├── api/          # FastAPI backend
+│   └── mobile/       # future field/mobile app, PWA, LINE Mini App, or wrapper
+├── packages/
+│   ├── shared/       # shared types/constants
+│   ├── ui/           # shared UI components
+│   └── config/       # shared config/schema
+├── infra/            # docker, deployment, env examples
+├── docs/             # requirements, specs, architecture, scope
+├── scripts/          # seed, backup, maintenance
+└── data/             # demo/sample data only
+```
+
+เป้าหมายคือแยก frontend, backend, future mobile, infra และ docs ให้ชัดตั้งแต่ต้น ไม่ให้ปนกันเหมือน repo เก่า
+
+---
+
+### 2. Backend Module Boundary
+
+Backend ใช้ FastAPI และแยก module ตาม bounded context
+
+```text
+apps/api/app/
+├── core/
+├── db/
+├── modules/
+│   ├── auth/
+│   ├── users/
+│   ├── departments/
+│   ├── permissions/
+│   ├── documents/
+│   ├── files/
+│   ├── memory/
+│   ├── ai/
+│   ├── chat/
+│   ├── finance/
+│   ├── handover/
+│   ├── field/
+│   ├── audit/
+│   └── admin/
+└── main.py
+```
+
+แต่ละ module ควรมี boundary ของตัวเอง เช่น routes, services, schemas, models, permissions และ tests
+
+กฎสำคัญ:
+
+```text
+Route handler ไม่ควรมี business logic หนัก
+Permission ต้องเช็กใน backend service
+AI/RAG ต้องเรียกผ่าน permission service ก่อนเสมอ
+Document, Memory, AI, Finance, Field ต้องไม่ผูกกันแบบมั่ว ๆ
+```
+
+---
+
+### 3. Database and RAG Direction
+
+MindKeep repo ใหม่เลือกใช้:
+
+```text
+PostgreSQL + pgvector
+```
+
+PostgreSQL จะเป็นทั้ง source of truth และ vector search layer
+
+เหตุผล:
+
+```text
+- ลดจำนวน service ที่ต้องติดตั้งในบริษัทลูกค้า
+- เหมาะกับ local/on-prem deployment
+- backup ง่ายกว่าแยก PostgreSQL + ChromaDB
+- permission/filter สามารถผูกกับข้อมูลจริงใน database ได้ชัดกว่า
+- ลดความสับสนเรื่อง dual vector store
+```
+
+แต่ต้องออกแบบให้พร้อมสำหรับ RAG ตั้งแต่ต้น
+
+Required RAG-ready concepts:
+
+```text
+- documents
+- document_versions
+- files
+- work_activities
+- memory_entries
+- memory_chunks
+- embeddings
+- ai_retrieval_logs
+- chat_sessions
+- chat_messages
+- source citations
+- permission-scoped retrieval
+```
+
+กฎหลัก:
+
+```text
+PostgreSQL is source of truth.
+pgvector is retrieval index, not permission authority.
+Permission must be resolved before vector search.
+Returned sources must be rechecked before being sent to AI.
+```
+
+---
+
+### 4. File Storage
+
+Phase 1 ใช้แนวทาง:
+
+```text
+Local filesystem first + StorageService abstraction
+```
+
+หมายความว่าไฟล์จริงเก็บใน server/local machine ของบริษัทก่อน แต่ code ต้องผ่าน `StorageService` เสมอ เพื่อให้อนาคตเปลี่ยนเป็น MinIO หรือ S3-compatible storage ได้
+
+StorageService responsibilities:
+
+```text
+- save original file
+- generate storage path
+- calculate checksum
+- read file for preview/extraction
+- delete/soft-delete file when allowed
+- support future MinIO backend
+```
+
+---
+
+### 5. Background Jobs
+
+งานที่ใช้เวลานานต้องใช้ background queue ตั้งแต่แรก
+
+ใช้กับ:
+
+```text
+- text extraction
+- OCR
+- file preview generation
+- document summary
+- table summary
+- embedding
+- AI post-processing
+- re-embedding failed memory
+```
+
+Requirement:
+
+```text
+Upload request should not block until all processing is finished.
+System should create a job record.
+User should see processing status.
+Failed jobs must be visible and retryable.
+```
+
+Implementation detail ยังเลือกได้ภายหลัง เช่น local worker, task queue, Redis/RQ, Celery หรือ simple DB-backed queue แต่ architecture ต้องไม่ผูกงานหนักไว้ใน request/response โดยตรง
+
+---
+
+### 6. Field / Production Mobile Direction
+
+Mobile/field workflow ยังไม่ล็อก implementation ในรอบนี้
+
+ตัวเลือกที่เปิดไว้:
+
+```text
+- Responsive web / PWA
+- LINE Chatbot
+- LINE Mini App
+- Future mobile app wrapper
+```
+
+แนวคิดที่ต้องรักษา:
+
+```text
+- เจ้าหน้าที่ออกหน้างานใช้ง่าย
+- บันทึกข้อมูลและรูปภาพจากมือถือ
+- ลดการส่งข้อมูลออกภายนอก
+- sync กลับเข้า MindKeep server หลักเมื่ออยู่ใน network ที่กำหนด
+- ข้อมูลยังไม่เข้า Work Memory จนกว่าจะ review
+```
+
+LINE direction:
+
+```text
+LINE Chatbot:
+  เหมาะกับการบันทึกง่าย ๆ เช่น ส่งรูป ส่งข้อความ กด quick reply
+  ผู้ใช้คุ้นเคย ใช้ง่าย
+  แต่ต้องระวังเรื่องข้อมูลผ่าน LINE infrastructure
+
+LINE Mini App:
+  เหมาะกับฟอร์มหน้างานที่ซับซ้อนกว่า chatbot
+  UX ควบคุมได้มากกว่า
+  แต่ยังต้องตรวจสอบข้อจำกัดด้าน local-first และข้อมูลอ่อนไหว
+
+PWA:
+  เหมาะกับ local-first/offline-first มากที่สุด
+  คุมข้อมูลได้ดีกว่า
+  แต่ผู้ใช้อาจต้องเรียนรู้ app ใหม่
+```
+
+สถานะ:
+
+```text
+Field mobile implementation = Open decision
+Do not build in Phase 1
+Keep data model/API flexible for future field capture
+```
+
+---
+
+### 7. Documentation Source of Truth
+
+Repo ใหม่ต้องมีเอกสาร markdown ที่เป็น source of truth ชัดเจน
+
+Required docs:
+
+```text
+docs/
+├── REQUIREMENTS.md          # requirement หลักของระบบ
+├── SYSTEM_SPEC.md           # สเปกระบบที่ต้องทำให้ได้ตามที่คาดหวัง
+├── SCOPE.md                 # ขอบเขตงาน: in scope / out of scope
+├── PROJECT_MAP.md           # โครงสร้าง repo และ module
+├── ARCHITECTURE.md          # architecture, data flow, deployment
+├── API_SPEC.md              # endpoint หลัก
+├── DATA_MODEL.md            # entity/table หลัก
+├── ROADMAP.md               # phase, Done / In Progress / Planned
+├── DECISIONS.md             # decision log สำคัญ
+└── ACCEPTANCE_CRITERIA.md   # เงื่อนไขว่าระบบถือว่าทำสำเร็จเมื่อไร
+```
+
+กฎเอกสาร:
+
+```text
+Feature is not done until code, tests, docs, and roadmap status are updated.
+No empty placeholder docs.
+No duplicate source of truth.
+If a decision changes, update DECISIONS.md.
+If scope changes, update SCOPE.md.
+If module changes, update PROJECT_MAP.md.
+```
+
+---
+
+### 8. Architecture Principles
+
+MindKeep repo ใหม่ต้องยึดหลักเหล่านี้:
+
+```text
+1. Local-first by default
+2. PostgreSQL + pgvector as core data/RAG layer
+3. Permission before retrieval
+4. Human review before Work Memory
+5. Background jobs for heavy processing
+6. Source citation for AI answers
+7. Department boundary by default
+8. Shared Knowledge must be approved
+9. Field/mobile is future-ready but not Phase 1 core
+10. Docs are part of done
+```
+
+---
+
+### 9. Round 5 Success Criteria
+
+Round 5 ถือว่าสำเร็จถ้า:
+
+```text
+- Repo structure แยก web/api/mobile/future packages ชัดเจน
+- Backend module boundaries ชัดเจน
+- Database direction เลือก PostgreSQL + pgvector
+- RAG readiness ถูกคิดตั้งแต่ต้น
+- File storage ไม่ล็อกกับ local filesystem ถาวร
+- Background jobs ไม่ทำใน request ตรง ๆ
+- Field/mobile ยังเป็น open decision ที่มี option ชัดเจน
+- Docs source of truth ถูกกำหนดครบ
+```

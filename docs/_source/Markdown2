@@ -1,0 +1,345 @@
+# MindKeep Requirement Collection
+
+## Round 2 — Users, Roles & Permissions
+
+### 1. Role Model
+
+MindKeep เวอร์ชันใหม่จะใช้ role หลักให้น้อยที่สุด เพื่อไม่ให้ระบบซับซ้อนเกินจำเป็น
+
+Base roles:
+
+```text
+employee
+department_lead
+owner / manager
+```
+
+ความหมาย:
+
+```text
+employee:
+  พนักงานทั่วไป แยกตามแผนกที่สังกัด
+
+department_lead:
+  หัวหน้าแผนก มีอำนาจสูงสุดภายในแผนกของตัวเอง
+
+owner / manager:
+  เจ้าของหรือผู้จัดการบริษัท เห็นภาพรวมและมีสิทธิ์บริหารระดับองค์กร
+```
+
+ระบบอาจมี permission ย่อยตามฟีเจอร์ เช่น finance access, OCR access, memory approval, admin settings แต่ permission เหล่านี้ไม่ควรถูกทำให้กลายเป็น role หลักเยอะเกินไป
+
+---
+
+### 2. Department-Based Access
+
+MindKeep เป็นระบบที่แยกสิทธิ์ตามแผนก
+
+พนักงานแต่ละคนต้องอยู่ในแผนก เช่น Finance, Marketing, Field/Production หรือ Admin
+
+กฎหลัก:
+
+```text
+พนักงานเห็นและทำงานได้เฉพาะในแผนกของตัวเอง
+หัวหน้าแผนกมีอำนาจสูงสุดเฉพาะแผนกตัวเอง
+เจ้าของ/ผู้จัดการสามารถเห็นภาพรวมข้ามแผนกตาม policy
+```
+
+พนักงานแผนกหนึ่งไม่สามารถดูข้อมูลจริงของอีกแผนกได้โดย default
+
+---
+
+### 3. Employee Permissions
+
+พนักงานทั่วไปสามารถทำงานพื้นฐานในแผนกของตัวเองได้
+
+สิ่งที่ employee ทำได้:
+
+```text
+- login
+- เข้า workspace ของแผนกตัวเอง
+- ดูเอกสารที่ตนมีสิทธิ์
+- upload file ในแผนกของตัวเอง
+- create simple note/document
+- preview file
+- edit document ในแผนกของตัวเอง ถ้าเอกสารไม่ถูก delete หรือ lock
+- delete เฉพาะเอกสารที่ตัวเองสร้าง และยังไม่ถูก lock
+- submit content/document for review
+- use AI / Work Memory เฉพาะข้อมูลของแผนกตัวเอง
+- ดู activity ของตัวเอง
+- แก้ไข profile ตัวเอง
+```
+
+เอกสารที่ employee ดูได้:
+
+```text
+private:
+  เฉพาะเอกสารของตัวเอง
+
+department:
+  เอกสารของแผนกตัวเอง
+
+public_internal:
+  เอกสารที่เปิดให้ทุกคนในองค์กรเห็นตาม policy
+
+shared_knowledge:
+  ความรู้กลางที่ผ่าน approval แล้ว
+```
+
+---
+
+### 4. Employee Restrictions
+
+พนักงานทั่วไปทำสิ่งเหล่านี้ไม่ได้ เว้นแต่มี permission เพิ่มหรือเป็นหัวหน้าแผนก/เจ้าของระบบ
+
+```text
+- approve document into Work Memory
+- lock document ของคนอื่น
+- access documents from another department
+- search another department's Work Memory
+- use finance OCR ถ้าไม่ได้รับสิทธิ์ใน Finance
+- submit finance record ถ้าไม่ได้รับสิทธิ์
+- confirm/post finance record
+- manage users
+- manage roles
+- change system settings
+- approve shared knowledge
+```
+
+---
+
+### 5. Department Lead Permissions
+
+Department Lead มีอำนาจสูงสุดเฉพาะภายในแผนกของตัวเอง
+
+สิ่งที่ department_lead ทำได้:
+
+```text
+- ดูเอกสารของแผนกตัวเอง
+- ดู Work Memory ของแผนกตัวเอง
+- ดู activity ของคนในแผนก
+- approve/reject content เข้า Work Memory
+- lock/unlock document ในแผนก
+- จัดการ tag/category ของแผนก
+- ตรวจสอบเอกสารที่รอ review
+- ดู handover/report ของแผนกตัวเอง
+- ใช้ AI เพื่อค้นงานเก่าภายในแผนกตัวเอง
+```
+
+ข้อจำกัด:
+
+```text
+department_lead ไม่เห็นข้อมูลลับของแผนกอื่นโดย default
+department_lead ไม่สามารถข้ามแผนกได้ เว้นแต่ owner/manager ให้สิทธิ์เพิ่ม
+```
+
+ใน MindKeep เวอร์ชันใหม่ ไม่ต้องมี reviewer role แยกในรอบแรก ให้หัวหน้าแผนกเป็นผู้ตรวจ/อนุมัติหลักก่อน
+
+---
+
+### 6. Owner / Manager Permissions
+
+Owner หรือ Manager คือผู้จัดการ/เจ้าของบริษัทที่ดูภาพรวมทั้งองค์กร
+
+สิ่งที่ owner/manager ทำได้:
+
+```text
+- ดู dashboard ภาพรวมบริษัท
+- ดู users, departments, roles ตาม policy
+- ดู activity ภาพรวม
+- ดู audit logs
+- ดู system health
+- สร้างหรือดู handover report ข้ามแผนก
+- เข้าถึงข้อมูลข้ามแผนกเมื่อจำเป็น
+- จัดการ setting หลักของระบบ
+```
+
+กฎสำคัญ:
+
+```text
+การเข้าถึงข้อมูล sensitive ข้ามแผนกของ owner/manager ต้องถูก audit
+owner/manager ไม่ควรเป็นข้ออ้างให้ AI ดึงทุกข้อมูลแบบไม่จำกัดโดยไม่ระบุ scope
+```
+
+---
+
+### 7. Admin Concept
+
+ใน requirement รอบนี้ จะไม่แยก admin เป็น role หลักอีกชั้นหนึ่ง
+
+การจัดการระบบจะอยู่ภายใต้ owner/manager หรือ permission เฉพาะ เช่น:
+
+```text
+users:manage
+departments:manage
+roles:manage
+system:settings
+audit:view
+memory:approve
+shared_knowledge:approve
+```
+
+ถ้าต้องการในอนาคต สามารถเพิ่ม technical admin ได้ แต่ Phase แรกควรเลี่ยง role ซับซ้อนเกินจำเป็น
+
+---
+
+### 8. Finance Permissions
+
+Finance เป็น module ที่มีสิทธิ์เฉพาะ เพราะเกี่ยวข้องกับข้อมูลการเงินและ OCR ใบเสร็จ
+
+ในระบบใหม่ ไม่จำเป็นต้องทำ finance_staff หรือ finance_reviewer เป็น role หลัก แต่ให้เป็น permission/capability ภายใน Finance department แทน
+
+Finance permissions:
+
+```text
+finance:ocr_use
+finance:record_submit
+finance:record_confirm
+finance:record_post
+finance:summary_view
+finance:settings_manage
+```
+
+กฎเบื้องต้น:
+
+```text
+พนักงาน Finance ที่ได้รับ finance:ocr_use ใช้ OCR ใบเสร็จได้
+พนักงาน Finance ที่ได้รับ finance:record_submit ส่ง finance record ได้
+หัวหน้า Finance หรือ owner/manager ยืนยัน/post finance record ได้
+พนักงานแผนกอื่นไม่เห็นข้อมูล Finance โดย default
+```
+
+---
+
+### 9. Document Visibility
+
+MindKeep ใช้ visibility หลักเหล่านี้:
+
+```text
+private
+department
+public_internal
+restricted
+shared_knowledge
+```
+
+ความหมาย:
+
+```text
+private:
+  เห็นเฉพาะเจ้าของเอกสาร และผู้มีสิทธิ์ตรวจสอบตาม policy
+
+department:
+  เห็นในแผนกเดียวกันตาม role/permission
+
+public_internal:
+  เห็นได้ทั้งองค์กร แต่ยังเป็นเอกสาร ไม่ใช่ shared knowledge สำหรับ AI ทุกแผนกโดยอัตโนมัติ
+
+restricted:
+  จำกัดเฉพาะคน/role ที่กำหนดในอนาคต
+  Phase แรกอาจทำงานใกล้เคียง private ก่อน ถ้ายังไม่มี explicit grant system
+
+shared_knowledge:
+  ความรู้กลางที่ผ่าน approval แล้ว และ AI ทุกแผนกใช้ได้
+```
+
+หมายเหตุสำคัญ:
+
+```text
+สำหรับ repo ใหม่ ให้ใช้ชื่อ public_internal แทน shared_internal
+เพราะชื่อ public_internal ชัดกว่าและสอดคล้องกับระบบเดิม
+```
+
+---
+
+### 10. AI / RAG Permission Rule
+
+AI ต้องใช้ permission เดียวกับระบบเอกสารและ Work Memory
+
+กฎสำหรับพนักงานทั่วไป:
+
+```text
+employee query AI ในแผนก finance
+allowed collections = shared_knowledge + memory_finance
+ห้ามเห็น memory_farm, memory_legal, memory_marketing
+```
+
+กฎสำหรับ non-admin:
+
+```text
+shared_knowledge คือช่องทางหลักที่ข้อมูลข้ามแผนกใช้ร่วมกันได้
+ถ้าข้อมูลของแผนกหนึ่งควรให้ทุกแผนกใช้ ต้องถูกย้าย/อนุมัติเป็น shared_knowledge
+ไม่ควรให้ AI ของพนักงานทั่วไป query ทุกแผนกจาก public_internal โดย default
+```
+
+กฎสำหรับ owner/manager:
+
+```text
+owner/manager สามารถข้ามแผนกได้ตาม policy
+ต้องเลือก scope ชัดเจน
+ต้องมี audit log
+AI ต้องไม่ default เป็นค้นทุกแผนกเสมอ
+```
+
+---
+
+### 11. Public Internal vs Shared Knowledge
+
+public_internal กับ shared_knowledge ต้องแยกความหมายกัน
+
+```text
+public_internal:
+  เอกสารที่คนในองค์กรดูได้
+  เหมาะกับประกาศ คู่มือทั่วไป หรือเอกสารที่ไม่ลับ
+  ไม่จำเป็นต้องกลายเป็น AI shared knowledge เสมอ
+
+shared_knowledge:
+  ข้อมูลที่ผ่าน approval แล้ว
+  AI ทุกแผนกใช้เป็นแหล่งความรู้กลางได้
+  ต้องมี process ตรวจสอบก่อนเข้า shared knowledge
+```
+
+สรุป:
+
+```text
+มองเห็นได้ทั้งองค์กร ≠ เข้า AI memory กลางทันที
+ต้องมี approval ก่อนกลายเป็น shared_knowledge
+```
+
+---
+
+### 12. Locked / Deleted Document Rules
+
+เอกสารควรมีสถานะเพื่อป้องกันการแก้ไขผิดพลาด
+
+กฎเบื้องต้น:
+
+```text
+deleted:
+  ไม่ควรแก้ไขหรือค้นโดยทั่วไป
+
+locked:
+  ห้ามลบหรือแก้ไขโดยพนักงานทั่วไป
+
+approved_to_memory:
+  ถูกอนุมัติให้เข้า Work Memory แล้ว
+  การแก้ไขควรสร้าง version ใหม่ ไม่แก้ทับของเดิม
+```
+
+พนักงานทั่วไปลบได้เฉพาะเอกสารที่ตัวเองสร้างและยังไม่ lock
+
+---
+
+### 13. Round 2 Success Criteria
+
+Round 2 ถือว่าสำเร็จถ้า MindKeep สามารถพิสูจน์ได้ว่า:
+
+```text
+- employee เห็นเฉพาะข้อมูลของตัวเอง/แผนก/ข้อมูล public ที่ควรเห็น
+- department_lead อนุมัติ Work Memory ได้เฉพาะแผนกตัวเอง
+- owner/manager เห็นภาพรวมและข้ามแผนกได้ตาม policy
+- AI ของพนักงานทั่วไปไม่ค้นข้อมูลข้ามแผนก
+- shared_knowledge เป็นช่องทางหลักสำหรับความรู้กลาง
+- public_internal ไม่ได้แปลว่า AI ทุกแผนกใช้เป็น memory ได้ทันที
+- การเข้าถึงข้อมูล sensitive ต้องถูก audit
+```

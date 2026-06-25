@@ -1,0 +1,975 @@
+# MindKeep Requirement Spec v0.1
+
+## 1. Product Overview
+
+**MindKeep** คือระบบ AI Workplace Memory สำหรับองค์กรขนาดเล็กและกลาง ที่ช่วยให้บริษัทเก็บความรู้จากงานจริงของพนักงานไว้ในระบบ เช่น เอกสาร ไฟล์ โน้ต รูปภาพ ใบเสร็จ ประวัติการทำงาน การอนุมัติ และบริบทของงาน
+
+MindKeep ไม่ใช่แค่ chatbot และไม่ใช่แค่ที่เก็บไฟล์ แต่เป็นระบบที่ทำให้งานประจำวันของพนักงานค่อย ๆ กลายเป็น **Work Memory** ขององค์กร เพื่อให้คนในแผนกเดียวกันหรือพนักงานใหม่สามารถค้นงานเก่า ถาม AI และรับช่วงงานต่อได้ง่ายขึ้น
+
+ชื่อระบบคือ **MindKeep**
+ชื่อ **LongDuem / ลองดื่ม** ใช้เป็น demo company หรือ case study เช่น บริษัทสวนมะพร้าวและขายน้ำมะพร้าวที่นำ MindKeep ไปใช้จริง
+
+---
+
+## 2. Product Principle
+
+หลักสำคัญของ MindKeep คือ:
+
+```text
+Company knowledge should stay inside the company.
+```
+
+ข้อมูลสำคัญ เช่น เอกสารภายใน ข้อมูลลูกค้า การเงิน supplier ประวัติการทำงาน Work Memory OCR text และ chat history ต้องไม่ถูกส่งออกไปยัง cloud AI ภายนอกโดย default
+
+MindKeep เวอร์ชันแรกเป็นระบบแบบ **local-first / on-premise per company** แต่ละบริษัทติดตั้งระบบของตัวเอง เช่น server, mini server หรือ notebook ภายในบริษัท
+
+AI หลักใช้ local model ผ่าน Ollama หรือ local runtime อื่นในอนาคต โดย model ต้องเปลี่ยนได้ตาม hardware ของแต่ละบริษัท
+
+---
+
+## 3. What MindKeep Is
+
+MindKeep คือ:
+
+* Internal AI workplace
+* Document workspace
+* File and note management system
+* Work Memory system
+* Permission-aware RAG system
+* Department-based AI assistant
+* Handover support system
+* Local-first AI system for SMEs
+
+MindKeep ช่วยให้บริษัท:
+
+* เก็บความรู้เมื่อพนักงานลาออก
+* ให้พนักงานใหม่รับงานต่อได้เร็วขึ้น
+* ค้นเอกสารและงานเก่าผ่าน AI
+* สรุปเอกสารและ activity
+* ลดงานซ้ำ
+* ทำให้ความรู้ไม่กระจุกอยู่กับคนเดียว
+* รักษาข้อมูลให้อยู่ภายในองค์กร
+
+---
+
+## 4. What MindKeep Is Not
+
+MindKeep ไม่ใช่:
+
+* chatbot ทั่วไป
+* public SaaS AI tool
+* Google Docs replacement ใน Phase 1
+* ERP/accounting เต็มระบบใน Phase 1
+* ระบบที่ให้ AI ตัดสิน permission เอง
+* ระบบที่ส่งข้อมูลภายในไป external AI API
+* ระบบที่ให้ข้อมูลเข้า AI memory โดยไม่ผ่าน human review
+
+---
+
+## 5. Core Users and Roles
+
+MindKeep ใช้ role หลักให้น้อยที่สุด
+
+### 5.1 Base Roles
+
+```text
+employee
+department_lead
+owner_manager
+```
+
+### 5.2 Employee
+
+พนักงานทั่วไป แยกตามแผนกที่สังกัด
+
+ทำได้:
+
+* login
+* เข้า workspace ของแผนกตัวเอง
+* upload file ในแผนกตัวเอง
+* create note/document
+* preview file
+* edit document ในแผนกตัวเองถ้าไม่ locked/deleted
+* delete เฉพาะเอกสารที่ตัวเองสร้างและยังไม่ lock
+* submit document/content for review
+* use AI จากข้อมูลที่มีสิทธิ์
+* ดู activity ของตัวเอง
+* แก้ profile ตัวเอง
+
+ทำไม่ได้:
+
+* approve content เข้า Work Memory
+* search memory ข้ามแผนก
+* access sensitive document ของแผนกอื่น
+* confirm/post finance record ถ้าไม่มี permission
+* manage users/roles/settings
+
+### 5.3 Department Lead
+
+หัวหน้าแผนก มีอำนาจสูงสุดเฉพาะในแผนกตัวเอง
+
+ทำได้:
+
+* ดู documents ของแผนก
+* ดู Work Memory ของแผนก
+* ดู activity ของคนในแผนก
+* approve/reject content เข้า Work Memory
+* lock/unlock document ในแผนก
+* จัดการ tag/category ของแผนก
+* ดู pending reviews
+* สร้าง handover report ของแผนก
+
+ทำไม่ได้โดย default:
+
+* approve memory ของแผนกอื่น
+* search confidential memory ของแผนกอื่น
+* ใช้ AI ข้ามแผนกถ้าไม่ได้รับสิทธิ์
+
+### 5.4 Owner / Manager
+
+เจ้าของหรือผู้จัดการบริษัท
+
+ทำได้:
+
+* ดูภาพรวมบริษัท
+* ดู dashboard รวม
+* จัดการ users/departments/permissions
+* ดู audit logs
+* ดู system health
+* สร้าง handover report ข้ามแผนกตาม policy
+* access ข้อมูลข้ามแผนกเมื่อจำเป็น
+
+กฎสำคัญ:
+
+* การเข้าถึงข้อมูล sensitive ข้ามแผนกต้องถูก audit
+* AI ของ owner/manager ต้องมี scope ชัดเจน ไม่ควร default เป็นค้นทุกอย่างเสมอ
+
+---
+
+## 6. Permission and Visibility
+
+### 6.1 Document Visibility
+
+MindKeep ใช้ visibility หลัก:
+
+```text
+private
+department
+public_internal
+restricted
+shared_knowledge
+```
+
+ความหมาย:
+
+```text
+private:
+  เห็นเฉพาะเจ้าของเอกสาร และผู้มีสิทธิ์ตาม policy
+
+department:
+  เห็นในแผนกเดียวกัน
+
+public_internal:
+  ทุกคนในองค์กรเห็นได้ แต่ไม่ได้แปลว่า AI ทุกแผนกใช้เป็น memory ได้ทันที
+
+restricted:
+  จำกัดเฉพาะคนหรือ role ที่กำหนด
+  Phase แรกอาจทำงานคล้าย private ก่อน หากยังไม่มี explicit grant system
+
+shared_knowledge:
+  ความรู้กลางที่ผ่าน approval แล้ว และ AI ทุกแผนกใช้ได้
+```
+
+### 6.2 AI Permission Rule
+
+AI ต้องใช้ permission เดียวกับ backend
+
+ตัวอย่าง:
+
+```text
+Employee in Finance asks AI
+Allowed retrieval:
+- shared_knowledge
+- approved Finance Work Memory
+- allowed Finance documents
+
+Not allowed:
+- Field memory
+- Marketing memory
+- private documents of other users
+- restricted documents without permission
+```
+
+กฎสำคัญ:
+
+```text
+Permission before retrieval.
+Vector search is not permission authority.
+Returned sources must be rechecked before AI uses them.
+```
+
+---
+
+## 7. Main Features
+
+### 7.1 Home / Workplace Dashboard
+
+หลัง login ผู้ใช้เข้า Home ก่อน
+
+Home แสดง:
+
+* recent work
+* recent documents
+* pending reviews
+* department shortcuts
+* AI quick access
+* activity summary
+* profile menu
+
+เป้าหมายคือให้ MindKeep รู้สึกเป็น workplace ไม่ใช่แค่หน้า chatbot
+
+---
+
+### 7.2 Profile / User Menu
+
+ฟีเจอร์หลัก:
+
+* ดู/แก้ไขโปรไฟล์
+* เปลี่ยนรูปโปรไฟล์
+* แก้ชื่อ-นามสกุล
+* แก้เบอร์โทรศัพท์
+* เปลี่ยนอีเมลหลัก
+* เปลี่ยนรหัสผ่าน
+* ดู role และ department
+* เปลี่ยน active department ถ้ามีมากกว่า 1 แผนก
+* ตั้งค่าภาษา
+* ตั้งค่า theme light/dark
+* notification preferences
+* privacy settings
+* ดู session/device
+* logout
+* logout all devices
+* Help Center / FAQ
+* ติดต่อผู้ดูแลระบบ
+* Terms / Privacy Policy
+
+Linked accounts, subscription, wallet, KYC เต็มระบบ ยังไม่ใช่ core ของ Phase 1
+
+---
+
+### 7.3 Documents
+
+Documents คือแกนหลักของ MindKeep
+
+ฟังก์ชัน:
+
+* upload file
+* preview file
+* create simple note/document
+* metadata
+* tag/category
+* owner/department/visibility
+* version history
+* lock/unlock
+* delete/restore
+* submit for memory review
+* approve to Work Memory
+* AI summarize
+* AI suggest title/tags
+* AI suggest edit
+* comments ในอนาคต
+* export PDF/DOCX ในอนาคต
+
+Phase 1 รองรับ:
+
+* PDF
+* JPG
+* JPEG
+* PNG
+* WEBP
+* DOCX
+* XLSX
+* CSV
+* in-app simple note/document
+
+Phase 1 editing:
+
+* แก้ note/document ที่สร้างในระบบได้
+* uploaded PDF/DOCX/XLSX/CSV/image เป็น read-only preview ก่อน
+
+---
+
+### 7.4 Work Memory
+
+Work Memory คือข้อมูลที่ผ่าน approval แล้ว และ AI สามารถใช้ค้นตอบได้
+
+Memory page แสดง:
+
+* memory entry
+* source document
+* summary
+* tags
+* department
+* created by
+* approved by
+* created date
+* visibility
+* search/filter
+* open source
+
+กฎสำคัญ:
+
+```text
+Uploaded file does not become Work Memory automatically.
+Human approval is required.
+```
+
+---
+
+### 7.5 Activity Timeline
+
+Activity Timeline คือประวัติการทำงานที่เกิดขึ้นจริง
+
+แสดง:
+
+* ใครทำอะไร
+* ทำในแผนกไหน
+* เกิดจาก document/chat/OCR/finance/field อะไร
+* สถานะ pending/approved/rejected/locked
+* link กลับไปยัง source
+
+ความต่าง:
+
+```text
+Activity = ประวัติการทำงาน
+Memory = ข้อมูลที่ผ่าน approval แล้วและ AI ใช้ได้
+```
+
+---
+
+### 7.6 AI Chat
+
+AI Chat ต้องคล้าย ChatGPT แต่ตอบจากข้อมูลภายในองค์กรตามสิทธิ์
+
+ฟังก์ชัน:
+
+* new chat
+* chat history
+* rename chat
+* delete/archive chat
+* active department scope
+* attach document/file
+* source citation
+* preview cited source
+* model status
+* streaming response
+* regenerate answer
+* copy answer
+* save answer as note
+* create task/activity from answer
+* clear chat
+
+กฎ:
+
+* AI ต้อง cite source เมื่อใช้ company data
+* AI ห้ามค้นข้อมูลที่ user ไม่มีสิทธิ์
+* ถ้าไม่มี source ที่เข้าถึงได้ ต้องบอกว่าไม่พบข้อมูลที่มีสิทธิ์เข้าถึง
+* chat history ต้องไม่หาย
+
+---
+
+### 7.7 Finance Workspace
+
+Finance ต้องเชื่อมเป็น flow เดียว ไม่แยกกระจัดกระจาย
+
+Flow:
+
+```text
+Receipt/Bill
+→ OCR Extraction
+→ Human Review
+→ Finance Record
+→ Vendor/Category
+→ Monthly Summary
+→ VAT/Tax Summary
+→ Work Memory
+→ AI Finance Answer
+```
+
+ฟังก์ชัน:
+
+* finance dashboard
+* receipt/bill OCR
+* OCR review
+* income/expense records
+* vendor management
+* category management
+* VAT/tax summary
+* monthly summary
+* cash flow summary
+* CSV/XLSX import
+* export report
+* approval queue
+* duplicate receipt detection
+* AI finance explanation
+
+กฎ:
+
+* AI/OCR ห้าม post record อัตโนมัติ
+* finance record ต้องมี human confirmation
+* ตัวเลขทางการเงินต้องคำนวณด้วย deterministic code ไม่ใช่ LLM เดา
+* finance record ต้อง link กลับ source receipt
+* finance data อยู่ใน Finance department โดย default
+
+---
+
+### 7.8 Field & Production Workspace
+
+สำหรับงานสวน/ผลิต/หน้างาน
+
+Concept:
+
+```text
+มอบหมายงานจากบริษัท
+→ เจ้าหน้าที่ออกหน้างาน
+→ บันทึกข้อมูล/ถ่ายรูปจากมือถือ
+→ เก็บใน mini app แบบ local/offline
+→ กลับถึงบริษัทหรือเชื่อม LAN
+→ sync เข้า server หลัก
+→ หัวหน้าแผนก review
+→ approve เข้า Work Memory
+```
+
+ฟังก์ชัน:
+
+* field task assignment
+* mobile capture
+* offline/local draft
+* photo capture
+* field note
+* harvest record
+* production batch record
+* raw material record
+* quantity/yield record
+* damaged/waste record
+* issue/problem report
+* timestamp
+* assigned staff
+* sync status
+* review after sync
+* approve to Work Memory
+
+Mobile implementation ยังเป็น open decision:
+
+* PWA
+* LINE Chatbot
+* LINE Mini App
+* future mobile wrapper
+
+ข้อควรระวัง:
+
+* LINE Chatbot ใช้ง่าย แต่ข้อมูลผ่าน LINE infrastructure จึงไม่ควรเป็น default สำหรับข้อมูล sensitive
+* LINE Mini App UX ดีขึ้น แต่ยังต้องตรวจเรื่อง local-first/privacy
+* PWA เหมาะกับ local-first/offline-first มากที่สุด แต่ผู้ใช้อาจต้องเรียนรู้ app ใหม่
+
+---
+
+### 7.9 Handover
+
+ใช้เมื่อมีพนักงานใหม่หรือการส่งต่องาน
+
+Flow:
+
+```text
+Department Lead opens Handover
+→ Select previous employee
+→ Select department scope
+→ Select time range
+→ Generate Handover Report
+→ AI summarizes approved memory + activity + documents
+→ Department Lead reviews
+→ New employee reads report
+→ New employee asks AI follow-up questions
+```
+
+Report ควรมี:
+
+* งานที่เคยทำ
+* เอกสารสำคัญ
+* decision history
+* งานค้าง
+* pattern การทำงาน
+* สิ่งที่คนใหม่ควรรู้
+* source links
+
+กฎ:
+
+* พนักงานใหม่เห็นเฉพาะข้อมูลที่มีสิทธิ์
+* Handover ห้ามเป็นช่องทางข้าม permission
+
+---
+
+### 7.10 Admin / Owner Command Center
+
+สำหรับ owner/manager
+
+ฟังก์ชัน:
+
+* company overview
+* users
+* departments
+* permissions
+* pending reviews
+* audit logs
+* activity overview
+* Work Memory overview
+* system health
+* AI model status
+* storage status
+* backup status
+* handover management
+
+---
+
+## 8. Main User Journeys
+
+### 8.1 Employee Creates Work into Memory
+
+```text
+Login
+→ Home / Department Workspace
+→ Upload file or create note
+→ System stores source
+→ System previews content
+→ System extracts text/data
+→ System generates summary/tags/metadata
+→ Employee reviews basic info
+→ Submit for review
+→ Department Lead approves/rejects
+→ Approved content becomes Work Memory
+→ AI can answer from it with source
+```
+
+### 8.2 Department Lead Reviews Memory
+
+```text
+Login
+→ See Pending Reviews
+→ Open submitted item
+→ Compare source with extracted summary
+→ Check title/tags/visibility/sensitivity
+→ Approve / Reject / Request changes
+→ If approved: embed into Work Memory
+→ Activity + audit created
+```
+
+### 8.3 New Employee Handover
+
+```text
+Department Lead generates Handover Report
+→ New employee reads report
+→ New employee asks AI follow-up
+→ AI answers only from allowed department sources
+```
+
+### 8.4 Finance OCR to Record
+
+```text
+Upload receipt
+→ OCR extracts fields
+→ User reviews
+→ Finance lead confirms
+→ Create finance record
+→ Dashboard updates
+→ Approved finance info enters Work Memory
+→ AI answers with source
+```
+
+### 8.5 Field Mobile Capture to Server
+
+```text
+Assign field task
+→ Staff records data/photo on mobile
+→ Save local/offline
+→ Return to office / connect LAN
+→ Sync to server
+→ Department Lead reviews
+→ Approved record becomes Work Memory
+```
+
+### 8.6 AI Chat
+
+```text
+Open AI Chat
+→ Select active department/scope
+→ Ask question
+→ Resolve permission
+→ Retrieve allowed sources
+→ AI answers with citation
+→ User opens source
+→ User may save answer as note/activity
+```
+
+---
+
+## 9. Architecture
+
+### 9.1 Repo Structure
+
+```text
+mindkeep/
+├── apps/
+│   ├── web/
+│   ├── api/
+│   └── mobile/
+├── packages/
+│   ├── shared/
+│   ├── ui/
+│   └── config/
+├── infra/
+├── docs/
+├── scripts/
+└── data/
+```
+
+### 9.2 Backend Modules
+
+```text
+apps/api/app/
+├── core/
+├── db/
+├── modules/
+│   ├── auth/
+│   ├── users/
+│   ├── departments/
+│   ├── permissions/
+│   ├── documents/
+│   ├── files/
+│   ├── memory/
+│   ├── ai/
+│   ├── chat/
+│   ├── finance/
+│   ├── handover/
+│   ├── field/
+│   ├── audit/
+│   └── admin/
+└── main.py
+```
+
+แต่ละ module ควรมี:
+
+```text
+routes.py
+service.py
+models.py
+schemas.py
+permissions.py
+tests/
+```
+
+กฎ:
+
+* route handler ไม่ควรมี business logic หนัก
+* permission ต้องอยู่ backend
+* AI/RAG ต้องผ่าน permission service
+* module ห้าม import ข้ามกันมั่ว
+* shared logic ใส่ core หรือ shared service ที่ตั้งใจออกแบบไว้เท่านั้น
+
+---
+
+## 10. Database and RAG
+
+ใช้:
+
+```text
+PostgreSQL + pgvector
+```
+
+PostgreSQL เป็น source of truth
+pgvector เป็น retrieval index
+
+ต้องออกแบบให้พร้อม RAG ตั้งแต่ต้น:
+
+```text
+documents
+document_versions
+files
+work_activities
+memory_entries
+memory_chunks
+embeddings
+chat_sessions
+chat_messages
+ai_retrieval_logs
+audit_logs
+```
+
+RAG rule:
+
+```text
+1. Resolve user permission
+2. Determine allowed departments/collections
+3. Query only allowed memory chunks
+4. Recheck returned sources
+5. Send allowed context to local LLM
+6. Return answer with source citations
+7. Log retrieval
+```
+
+---
+
+## 11. File Storage
+
+Phase 1 ใช้:
+
+```text
+Local filesystem + StorageService abstraction
+```
+
+StorageService ต้องรองรับ:
+
+* save original file
+* generate path
+* calculate checksum
+* read file for preview/extraction
+* soft-delete file
+* future MinIO/S3-compatible backend
+
+---
+
+## 12. Background Jobs
+
+งานหนักต้องใช้ background queue ตั้งแต่แรก
+
+ใช้กับ:
+
+* text extraction
+* OCR
+* preview generation
+* summary
+* embedding
+* re-embedding
+* AI post-processing
+
+Requirement:
+
+* upload request ห้าม block จน job เสร็จ
+* user เห็น processing status
+* failed job retry ได้
+* job status ต้องเก็บใน database
+
+---
+
+## 13. Required Markdown Docs
+
+Repo ใหม่ต้องมี docs เป็น source of truth
+
+```text
+docs/
+├── REQUIREMENTS.md
+├── SYSTEM_SPEC.md
+├── SCOPE.md
+├── PROJECT_MAP.md
+├── ARCHITECTURE.md
+├── API_SPEC.md
+├── DATA_MODEL.md
+├── ROADMAP.md
+├── DECISIONS.md
+└── ACCEPTANCE_CRITERIA.md
+```
+
+ความหมาย:
+
+```text
+REQUIREMENTS.md:
+  requirement หลักของระบบ
+
+SYSTEM_SPEC.md:
+  สเปกระบบที่ต้องทำให้ได้ตามที่คาดหวัง
+
+SCOPE.md:
+  ขอบเขตงาน in scope / out of scope
+
+PROJECT_MAP.md:
+  โครงสร้าง repo และ module
+
+ARCHITECTURE.md:
+  architecture, data flow, deployment
+
+API_SPEC.md:
+  endpoint หลัก
+
+DATA_MODEL.md:
+  entity/table หลัก
+
+ROADMAP.md:
+  phase, Done / In Progress / Planned
+
+DECISIONS.md:
+  decision log สำคัญ
+
+ACCEPTANCE_CRITERIA.md:
+  เงื่อนไขว่าระบบถือว่าทำสำเร็จเมื่อไร
+```
+
+กฎ:
+
+```text
+Feature is not done until code, tests, docs, and roadmap are updated.
+No duplicate source of truth.
+No empty placeholder docs.
+```
+
+---
+
+## 14. Scope
+
+### 14.1 Phase 1 In Scope
+
+Phase 1 ต้องทำแกนระบบให้ใช้ได้ก่อน
+
+In scope:
+
+* auth/login
+* users/departments/basic permissions
+* Home dashboard shell
+* Profile basic
+* Documents
+* file upload
+* file preview
+* simple note/document
+* metadata/tag/visibility
+* text extraction
+* AI summary
+* review before memory
+* Work Memory
+* pgvector embedding
+* permission-aware RAG
+* AI Chat basic
+* source citation
+* Activity Timeline
+* Audit logs for sensitive action
+* local filesystem via StorageService
+* background jobs
+* docs source of truth
+
+### 14.2 Phase 1 Out of Scope
+
+Out of scope:
+
+* full Google Docs editor
+* real-time collaborative editing
+* full spreadsheet editor
+* mobile app production
+* LINE integration production
+* full ERP/accounting
+* automatic finance posting
+* external cloud AI for company data
+* multi-tenant SaaS
+* subscription/payment system
+* KYC full system
+* complex notification system
+* social publishing
+
+---
+
+## 15. Roadmap
+
+```text
+Phase 1:
+  Document + Work Memory Core
+
+Phase 2:
+  Finance Workspace
+
+Phase 3:
+  Handover / New Employee Continuity
+
+Phase 4:
+  Department Workspace Expansion
+
+Phase 5:
+  Full AI Chat Experience
+
+Phase 6:
+  Field & Production Mobile / Mini App / LINE Decision
+
+Phase 7:
+  Admin / Owner Command Center
+```
+
+---
+
+## 16. Acceptance Criteria
+
+Phase 1 ถือว่าสำเร็จเมื่อ:
+
+* user login ได้
+* user เข้า department workspace ได้
+* user upload supported files ได้
+* user preview supported files ได้
+* user create simple note ได้
+* system extract/summarize content ได้
+* content ต้องรอ review ก่อนเข้า memory
+* department lead approve/reject ได้
+* approved content เข้า Work Memory ได้
+* AI search เฉพาะ memory ที่ user มีสิทธิ์ได้
+* AI answer มี source citation
+* user เปิด source citation ได้
+* employee search ข้ามแผนกไม่ได้
+* shared_knowledge เป็นช่องทางกลางที่ผ่าน approval
+* background jobs มี status/retry
+* sensitive action มี audit log
+* system run local/on-prem ได้
+* ไม่มี sensitive company data ถูกส่งไป external AI โดย default
+* docs/roadmap/status อัปเดตตรงกับ code
+
+---
+
+## 17. Claude Code Build Order
+
+Claude Code ควรเริ่มจากลำดับนี้ ห้ามกระโดดทำทุกอย่างพร้อมกัน
+
+```text
+1. Create repo structure
+2. Create docs source of truth
+3. Setup backend FastAPI skeleton
+4. Setup frontend Next.js skeleton
+5. Setup PostgreSQL + migrations
+6. Create auth/users/departments/permissions
+7. Create documents/files module
+8. Create StorageService
+9. Create background job system
+10. Create extraction/summary pipeline
+11. Create memory_entries/memory_chunks/pgvector
+12. Create review before memory flow
+13. Create basic AI Chat with source citation
+14. Create Activity Timeline + Audit logs
+15. Validate Phase 1 acceptance criteria
+```
+
+---
+
+## 18. Non-Negotiable Rules
+
+```text
+- No AI retrieval without permission filter
+- No Work Memory without human approval
+- No sensitive company data to external AI by default
+- No finance posting by LLM
+- No hidden cross-department access
+- No duplicate docs source of truth
+- No feature marked done without tests/docs/status
+- No route-level business logic overload
+- No vector store acting as permission authority
+```
+
+---
+
+## 19. Final Summary
+
+MindKeep ต้องเริ่มจากแกนที่แข็งก่อน คือ **Document + Work Memory + Permission-aware AI**
+
+เมื่อแกนนี้ทำงานได้จริง ระบบจะขยายไป Finance, Handover, Department Workspace, Field/Production และ Admin ได้โดยไม่หลุดทิศทาง
+
+เป้าหมายไม่ใช่ทำระบบใหญ่ที่สุดตั้งแต่วันแรก แต่คือทำระบบที่ข้อมูลไม่รั่ว สิทธิ์ไม่พัง AI ไม่มั่ว และองค์กรสามารถเก็บความรู้จากงานจริงได้ตั้งแต่ Phase 1

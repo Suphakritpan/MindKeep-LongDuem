@@ -1,0 +1,87 @@
+{
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\README.md": {
+    "mtime": 1782280926.0719218,
+    "ast_hash": "48091b96ddfcdc63b811be1e802a1418",
+    "semantic_hash": "48091b96ddfcdc63b811be1e802a1418"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\ACCEPTANCE_CRITERIA.md": {
+    "mtime": 1782321578.7407572,
+    "ast_hash": "a9955c592f5cca33c7e43e6265832247",
+    "semantic_hash": "a9955c592f5cca33c7e43e6265832247"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\API_SPEC.md": {
+    "mtime": 1782321438.868213,
+    "ast_hash": "544da3433355905f1ede16f3da945132",
+    "semantic_hash": "544da3433355905f1ede16f3da945132"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\ARCHITECTURE.md": {
+    "mtime": 1782321353.1437068,
+    "ast_hash": "ab9f10f9dba99672f29f28e8e4357c2f",
+    "semantic_hash": "ab9f10f9dba99672f29f28e8e4357c2f"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\DATA_MODEL.md": {
+    "mtime": 1782321406.3557925,
+    "ast_hash": "7354b7042c103e136628a41af415324a",
+    "semantic_hash": "7354b7042c103e136628a41af415324a"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\DECISIONS.md": {
+    "mtime": 1782321537.0354576,
+    "ast_hash": "1e55bac8ac9cbfc5ca46194d545f06c9",
+    "semantic_hash": "1e55bac8ac9cbfc5ca46194d545f06c9"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\MASTER_PROMPT.md": {
+    "mtime": 1782321635.3202286,
+    "ast_hash": "5998bec176e0e37bd3768da02c2a68ac",
+    "semantic_hash": "5998bec176e0e37bd3768da02c2a68ac"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\PROJECT_MAP.md": {
+    "mtime": 1782321308.5709329,
+    "ast_hash": "aaf140cc7d7710a92754fe0f75ddc51b",
+    "semantic_hash": "aaf140cc7d7710a92754fe0f75ddc51b"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\REQUIREMENTS.md": {
+    "mtime": 1782321146.5637462,
+    "ast_hash": "eaaaa5f0acde3520cd245867eeec1f3a",
+    "semantic_hash": "eaaaa5f0acde3520cd245867eeec1f3a"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\ROADMAP.md": {
+    "mtime": 1782321481.8008413,
+    "ast_hash": "19b101fd1eeafacded0fcb2cb59d9633",
+    "semantic_hash": "19b101fd1eeafacded0fcb2cb59d9633"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\SCOPE.md": {
+    "mtime": 1782321267.8361766,
+    "ast_hash": "3951ee18fd7f38073a74e6f2922d17a4",
+    "semantic_hash": "3951ee18fd7f38073a74e6f2922d17a4"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\SYSTEM_SPEC.md": {
+    "mtime": 1782321239.8312309,
+    "ast_hash": "58c6c871a33aefd2f1788f9456f2645e",
+    "semantic_hash": "58c6c871a33aefd2f1788f9456f2645e"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\api\\LongRian_API_Spec.md": {
+    "mtime": 1782229421.2857802,
+    "ast_hash": "093339665c21ec3113c80a8335db310a",
+    "semantic_hash": "093339665c21ec3113c80a8335db310a"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\product\\LongRian_Department_Workspace_Spec_v1.md": {
+    "mtime": 1782229497.922371,
+    "ast_hash": "9af39d875aa99d3bd10aa6968bc8e739",
+    "semantic_hash": "9af39d875aa99d3bd10aa6968bc8e739"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\product\\MindKeep_AI_Workspace_Core_Spec_v0.1.md": {
+    "mtime": 1779889604.6623325,
+    "ast_hash": "04fc889662ee67fefc0e845240657cc1",
+    "semantic_hash": "04fc889662ee67fefc0e845240657cc1"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\reports\\OLD_PROJECT_FREEZE_NOTE.md": {
+    "mtime": 1782271705.117442,
+    "ast_hash": "91bc1e1fc8df9cae7bc5adf399710229",
+    "semantic_hash": "91bc1e1fc8df9cae7bc5adf399710229"
+  },
+  "C:\\Users\\PAN\\OneDrive\\\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\\GitHub\\MindKeep-LongDuem\\docs\\reports\\OLD_PROJECT_PROBLEM_REPORT.md": {
+    "mtime": 1782232990.029544,
+    "ast_hash": "58e7a8a448863d9faf8d35f0cd50bef1",
+    "semantic_hash": "58e7a8a448863d9faf8d35f0cd50bef1"
+  }
+}

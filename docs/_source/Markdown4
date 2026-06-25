@@ -1,0 +1,364 @@
+# MindKeep Requirement Collection
+
+## Round 4 — Main User Journeys
+
+### 1. Employee Journey — Create Work into Memory
+
+Journey นี้คือ flow หลักของพนักงานทั่วไปใน Phase 1
+
+เป้าหมายคือให้พนักงานทำงานตามปกติ เช่น อัปโหลดไฟล์ สร้างโน้ต เก็บเอกสาร แล้วระบบช่วยแปลงสิ่งนั้นเป็นข้อมูลที่ตรวจสอบได้ ก่อนกลายเป็น Work Memory ของแผนก
+
+Flow:
+
+```text id="o1ry44"
+Login
+→ Home / Department Workspace
+→ Create work
+   - upload file
+   - create note
+   - attach image/document/table
+→ System stores original source
+→ System previews file/content
+→ System extracts text or structured data
+→ System generates summary, tags, and metadata suggestion
+→ Employee reviews basic information
+→ Employee submits for memory review
+→ Status becomes pending_review
+→ Department Lead reviews
+→ If approved: content becomes Work Memory
+→ If rejected: content stays as file/document but is not searchable by AI
+```
+
+Employee can do:
+
+```text id="4xmstb"
+- upload work source
+- create simple note/document
+- preview own documents
+- edit own unlocked documents
+- suggest tags/metadata
+- submit for review
+- see review status
+- ask AI from approved memory in own department
+```
+
+Employee cannot do:
+
+```text id="rzrmn9"
+- approve content into Work Memory
+- make unreviewed content searchable by AI
+- search another department's memory
+- access sensitive cross-department documents
+```
+
+UX principle:
+
+```text id="6ai4xw"
+พนักงานไม่ควรรู้สึกว่ากำลังทำงานเพิ่มเพื่อป้อนข้อมูลให้ AI
+แต่ควรรู้สึกว่าเขาทำงานตามปกติ แล้ว MindKeep ช่วยเก็บสิ่งนั้นให้เป็นความรู้ขององค์กร
+```
+
+---
+
+### 2. Department Lead Journey — Review and Protect Department Memory
+
+Journey นี้คือ flow ของหัวหน้าแผนก
+
+เป้าหมายคือให้หัวหน้าแผนกเป็นคนคัดกรองว่าอะไรควรกลายเป็นความรู้ของแผนก เพื่อป้องกันข้อมูลผิด ข้อมูลดิบ หรือข้อมูล sensitive หลุดเข้า AI memory
+
+Flow:
+
+```text id="81tdd3"
+Login
+→ Home / Department Workspace
+→ See Pending Reviews
+→ Open submitted item
+→ Compare original source with extracted text/summary
+→ Check:
+   - title
+   - summary
+   - tags
+   - department
+   - visibility
+   - sensitivity
+   - source file
+→ Approve / Reject / Request changes
+```
+
+If approved:
+
+```text id="45cv3w"
+Approved item
+→ embed into department Work Memory
+→ becomes searchable by department AI
+→ source citation is preserved
+→ activity event is created
+→ audit event is created
+→ status becomes approved_to_memory
+```
+
+If rejected:
+
+```text id="t4q5gv"
+Rejected item
+→ remains in document/file library
+→ not embedded into Work Memory
+→ not searchable by AI
+→ rejection reason is saved
+→ employee can revise and resubmit
+```
+
+Department Lead can do:
+
+```text id="pl1oel"
+- review pending items
+- approve/reject Work Memory entries
+- lock/unlock department documents
+- view department activity
+- view department memory
+- correct metadata/tags before approval
+- create handover report for own department
+```
+
+Department Lead cannot do by default:
+
+```text id="wfyq3y"
+- review other department memory
+- approve cross-department knowledge
+- search confidential memory of other departments
+```
+
+UX principle:
+
+```text id="bk4g8m"
+หัวหน้าแผนกต้องเห็นชัดว่า item นี้มาจากใคร เป็นไฟล์อะไร สรุปว่าอะไร และถ้า approve แล้ว AI จะใช้ข้อมูลนี้ตอบคนในแผนกได้
+```
+
+---
+
+### 3. New Employee / Handover Journey
+
+Journey นี้ใช้เมื่อมีพนักงานใหม่มารับงานต่อจากคนเดิม หรือมีการส่งต่องานในแผนก
+
+แนวทางหลักที่เลือก: **D — หัวหน้าแผนกสร้าง Handover Report ก่อน แล้วพนักงานใหม่อ่านและถาม AI ต่อจาก report ได้**
+
+Flow:
+
+```text id="v6376y"
+Department Lead opens Handover
+→ Select leaving/previous employee
+→ Select department scope
+→ Select time range
+→ Generate Handover Report
+→ System retrieves approved Work Memory + related documents + activities
+→ AI summarizes:
+   - งานที่เคยทำ
+   - เอกสารสำคัญ
+   - decision history
+   - งานค้าง
+   - pattern การทำงาน
+   - สิ่งที่คนใหม่ควรรู้
+→ Department Lead reviews report
+→ New employee reads report
+→ New employee asks AI follow-up questions from allowed sources
+```
+
+Important rule:
+
+```text id="7m3kqt"
+พนักงานใหม่เห็นเฉพาะ handover และ source ที่ตัวเองมีสิทธิ์ในแผนกนั้น
+AI ห้ามใช้ handover เป็นช่องทางลัดเพื่อเปิดข้อมูลข้ามแผนก
+```
+
+Example:
+
+```text id="vq0pzu"
+พนักงานใหม่ฝ่าย Finance ถาม:
+“ก่อนหน้านี้พี่ต้อยทำงานปิดงบรายเดือนยังไง”
+
+AI ต้องตอบจาก:
+- Finance Work Memory
+- Finance documents ที่ approved
+- Handover report ของ Finance
+- Shared Knowledge ที่เกี่ยวข้อง
+```
+
+---
+
+### 4. Finance Journey — Receipt to Record to Memory
+
+Journey นี้ใช้กับ Finance Workspace
+
+Flow:
+
+```text id="plwou9"
+Finance user uploads receipt/bill
+→ OCR extracts fields
+→ System suggests:
+   - vendor
+   - category
+   - amount
+   - VAT/tax fields
+   - duplicate warning
+→ User reviews and edits fields
+→ Finance lead / department lead confirms
+→ System creates finance record
+→ Record links back to source receipt
+→ Finance dashboard updates
+→ Approved finance info becomes Work Memory
+→ AI can answer finance questions with source
+```
+
+Rules:
+
+```text id="y1dmew"
+- AI/OCR cannot post finance records automatically
+- Human confirmation is required
+- Finance numbers must be calculated by deterministic code, not LLM guessing
+- Finance records must cite source receipt/document
+- Sensitive finance memory stays inside Finance unless approved as shared knowledge
+```
+
+UX principle:
+
+```text id="b3fp4t"
+Finance user should feel like the system reduces manual typing and helps prevent mistakes, not like AI is taking over accounting decisions
+```
+
+---
+
+### 5. Field & Production Journey — Mobile Capture to Server Memory
+
+Journey นี้ใช้กับแผนกสวน ฝ่ายผลิต หรือทีมที่ต้องลงหน้างานจริง
+
+แนวทางหลักคือใช้ **mobile mini app แบบ offline/local capture** แล้ว sync เข้า server หลักเมื่อกลับถึงบริษัทหรือเชื่อมต่อ LAN
+
+Flow:
+
+```text id="wuwnbd"
+Company / Department Lead assigns field task
+→ Staff opens mobile mini app
+→ Staff goes to field / production site
+→ Staff records data:
+   - note
+   - photo
+   - quantity
+   - issue/problem
+   - harvest/production details
+   - timestamp
+→ Data is saved locally on device
+→ Staff returns to office or connects to company LAN
+→ Mini app syncs data to MindKeep server
+→ Department Lead reviews synced record
+→ Approved record becomes Field/Production Work Memory
+→ AI can find past field issues, production logs, and repeated patterns
+```
+
+Mobile UX rules:
+
+```text id="vvn52v"
+- ใช้ง่าย
+- ปุ่มใหญ่
+- ฟอร์มสั้น
+- ถ่ายรูปเร็ว
+- ลดการพิมพ์ด้วย dropdown
+- autosave draft
+- offline-first
+- แสดง sync status ชัดเจน
+- ไม่ส่งข้อมูลออกนอกบริษัทผ่าน cloud โดย default
+```
+
+Example LongDuem field records:
+
+```text id="yj6t1s"
+สวน:
+- วันนี้เก็บมะพร้าวกี่ลูก
+- แปลงไหนมีปัญหา
+- รูปต้นมะพร้าว / ผลผลิต
+- ปัญหาโรคพืช
+- สภาพอากาศ
+- คนงานที่รับผิดชอบ
+
+ฝ่ายผลิต:
+- ล็อตผลิตน้ำมะพร้าว
+- จำนวนผลิต
+- ของเสีย
+- วัตถุดิบที่ใช้
+- ปัญหาเครื่องจักร
+- รูปหน้างาน
+```
+
+Important rule:
+
+```text id="4lgmia"
+ข้อมูลที่บันทึกในมือถือยังไม่เป็น Work Memory ทันที
+ต้อง sync เข้า server หลักและผ่าน review ก่อน
+```
+
+---
+
+### 6. AI Chat Journey — Ask with Sources and Permission
+
+Journey นี้คือประสบการณ์ AI Chat หลักของ MindKeep
+
+Flow:
+
+```text id="sajg6s"
+User opens AI Chat
+→ Selects or confirms active department scope
+→ Starts new chat or opens old chat
+→ Asks question
+→ System resolves user permissions
+→ System retrieves:
+   - shared_knowledge
+   - approved Work Memory of allowed department
+   - allowed source documents
+→ AI answers with source citations
+→ User opens cited source if needed
+→ User can save useful answer as note or activity
+```
+
+Rules:
+
+```text id="zj5b2q"
+- Chat history must not disappear
+- User can create new chat
+- AI must cite sources when using company data
+- AI must not search unauthorized departments
+- AI must not expose hidden source content
+- AI must say it cannot find accessible information if no allowed source exists
+```
+
+UX principle:
+
+```text id="m5byx6"
+AI Chat should feel familiar like ChatGPT, but safer because it only answers from company data that the user is allowed to access
+```
+
+---
+
+### 7. Cross-Journey Rule
+
+ทุก journey ต้องสร้างหรือเชื่อมกับ activity และ audit ตามความสำคัญ
+
+```text id="ljfd9o"
+Document action
+→ Activity
+
+Memory approval
+→ Activity + Audit
+
+Finance confirmation
+→ Activity + Audit
+
+Field sync
+→ Activity
+
+AI answer from company source
+→ Chat log + retrieval log
+
+Cross-department owner access
+→ Audit
+```
+
+MindKeep ต้องทำให้ผู้ใช้เห็นความต่อเนื่องของงาน ไม่ใช่แค่เก็บข้อมูลเงียบ ๆ
