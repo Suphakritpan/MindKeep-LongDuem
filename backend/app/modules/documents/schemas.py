@@ -37,6 +37,12 @@ class DocumentOut(BaseModel):
     updated_at: datetime
 
 
+class DocumentDetailOut(DocumentOut):
+    """Single-document view — includes the (potentially large) extracted text."""
+
+    extracted_text: str | None
+
+
 class VersionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

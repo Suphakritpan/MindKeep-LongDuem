@@ -159,8 +159,8 @@ Status: 🟢 built · 📋 Phase 1 planned · 🔜 later phase
 | `/users` | `modules/users` | 🟢 Batch B |
 | `/departments` | `modules/departments` | 🟢 Batch B |
 | `/permissions` | `modules/permissions` | 🟢 Batch B |
-| `/documents`, `/files` | `modules/documents`, `modules/files` | 🟢 Batch C (approve→memory pending Batch G) |
-| `/memory` | `modules/memory` | 📋 Phase 1 (Batch F/G) |
+| `/documents`, `/files` | `modules/documents`, `modules/files` | 🟢 Batch C + E (upload→extract job; approve→memory pending Batch G) |
+| `/memory` | `modules/memory` | 🟡 Batch F (embed write-path: `embed` job, no endpoint yet) · endpoints Batch G/H |
 | `/ai`, `/chat` | `modules/ai`, `modules/chat` | 📋 Phase 1 (Batch H) |
 | `/jobs` | `app/jobs` (core) | 🟢 Batch D |
 | `/activities` | `modules/audit` | 📋 Phase 1 (Batch I) |

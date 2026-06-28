@@ -31,7 +31,12 @@
 >   StorageService (local FS, sha256), upload/preview-download/CRUD/submit/lock/delete, permission-aware list, `/documents /files`
 > - **Batch D (background job system) ✅ DONE** — `jobs` table + migration 0004, DB-backed worker (FOR UPDATE SKIP LOCKED),
 >   handler registry, retry/max_attempts, `/jobs` (list/get/retry) per-user scoped, compose `worker` service
-> งานถัดไป = **Batch E** (extraction + summary pipeline — handlers ตัวจริง)
+> - **Batch E (extraction + summary) ✅ DONE** — upload/create-note → enqueue `extract` job; per-type extractors
+>   (pdf/docx/xlsx/csv/OCR), Ollama summary + fallback; `documents.extracted_text`+`summary` (migration 0005)
+> - **Batch F (work memory + embedding) ✅ DONE** — `memory_entries`+`memory_chunks` (pgvector column, migration 0006),
+>   word-boundary chunking (ported จาก LongRian), `EmbeddingClient` (Ollama, no fallback), `embed` job handler;
+>   **write-path only** — การ trigger จาก approval = Batch G
+> งานถัดไป = **Batch G** (review-before-memory: approval → enqueue `embed`)
 
 ---
 
@@ -68,7 +73,9 @@
 7.  Create documents/files module      ◀── ✅ DONE (Batch C — migration 0003)
 8.  Create StorageService              ◀── ✅ DONE (Batch C — local FS + sha256)
 9.  Create background job system       ◀── ✅ DONE (Batch D — DB worker, migration 0004)
-10. Create extraction/summary pipeline ◀── ⏭ NEXT (Batch E)
+10. Create extraction/summary pipeline ◀── ✅ DONE (Batch E — extract handler, migration 0005)
+11. Create memory_entries/chunks/pgvector ◀── ✅ DONE (Batch F — embed pipeline, migration 0006)
+12. Create review-before-memory flow      ◀── ⏭ NEXT (Batch G)
 7.  Create documents/files module
 8.  Create StorageService
 9.  Create background job system

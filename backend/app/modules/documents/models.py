@@ -44,6 +44,7 @@ class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         _enum(DocVisibility, 32), default=DocVisibility.private, nullable=False
     )
     state: Mapped[DocState] = mapped_column(_enum(DocState, 32), default=DocState.draft, nullable=False)
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # lock / delete are flags, not states (DATA_MODEL §0)

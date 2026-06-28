@@ -6,15 +6,25 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.jobs.repository import JobRepository
 from app.modules.documents.models import Document, DocumentVersion, DocType
 from app.modules.documents.repository import DocumentRepository
 from app.modules.documents.schemas import NoteCreate, NoteUpdate
 from app.modules.files.models import File
 from app.modules.files.repository import FileRepository
 from app.modules.users.models import User
-from app.shared.enums import DocState, DocVisibility
+from app.shared.enums import DocState, DocVisibility, JobType
 from app.storage.policy import MAX_UPLOAD_BYTES, is_allowed_extension, mime_for
 from app.storage.service import StorageService
+
+
+def _enqueue_extract(db, document_id, created_by) -> None:
+    JobRepository(db).enqueue(
+        type=JobType.extract,
+        target_type="document",
+        target_id=document_id,
+        created_by=created_by,
+    )
 
 
 def _now() -> dt.datetime:
@@ -40,6 +50,7 @@ class DocumentService:
         self.repo.add_version(
             DocumentVersion(document_id=doc.id, version_no=1, content=payload.content, created_by=user.id)
         )
+        _enqueue_extract(self.db, doc.id, user.id)
         self.db.commit()
         return doc
 
@@ -117,5 +128,6 @@ class DocumentService:
                 uploaded_by=user.id,
             )
         )
+        _enqueue_extract(self.db, doc.id, user.id)
         self.db.commit()
         return doc, file

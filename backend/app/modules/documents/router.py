@@ -10,7 +10,13 @@ from app.db.session import get_db
 from app.modules.documents.models import Document
 from app.modules.documents.permissions import can_edit, can_manage_lock, can_view
 from app.modules.documents.repository import DocumentRepository
-from app.modules.documents.schemas import DocumentOut, NoteCreate, NoteUpdate, VersionOut
+from app.modules.documents.schemas import (
+    DocumentDetailOut,
+    DocumentOut,
+    NoteCreate,
+    NoteUpdate,
+    VersionOut,
+)
 from app.modules.documents.service import DocumentService
 from app.modules.files.repository import FileRepository
 from app.modules.permissions.service import PermissionService
@@ -50,7 +56,7 @@ def list_documents(current: CurrentUser, db: DbDep, limit: int = 100, offset: in
     return DocumentRepository(db).list_visible(current.id, allowed, limit=limit, offset=offset)
 
 
-@router.get("/{document_id}", response_model=DocumentOut)
+@router.get("/{document_id}", response_model=DocumentDetailOut)
 def get_document(document_id: uuid.UUID, current: CurrentUser, db: DbDep) -> Document:
     doc = _load(db, document_id)
     if not can_view(PermissionService(db), current, doc):

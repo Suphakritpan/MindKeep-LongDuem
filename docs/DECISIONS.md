@@ -162,6 +162,31 @@ Format: แต่ละข้อ = **Decision · Context · Consequence**
 - **Consequence:** รัน worker หลายตัวพร้อมกันได้ (SKIP LOCKED); retry อัตโนมัติจนถึง `max_attempts` แล้วเป็น `failed`;
   `POST /jobs/{id}/retry` รีเซ็ตเป็น queued; handlers จริง (extract/ocr/summary/embed) มาใน Batch E/F; compose มี service `worker`
 
+## ADR-026 ✅ Extraction libs + summary via Ollama (fallback) — Batch E
+
+- **Decision:** extraction per type — pypdf (PDF), python-docx (DOCX), openpyxl (XLSX), stdlib csv (CSV),
+  pytesseract+Pillow (image OCR, **best-effort**); import แบบ lazy ใน function. summary = `OllamaClient` (urllib →
+  `/api/generate`) มี **deterministic truncate fallback** ถ้า LLM ไม่พร้อม
+- **Context:** Phase 1 demo อาจยังไม่มี Ollama/tesseract — pipeline ต้องไม่ค้าง และห้ามส่งข้อมูลออก external (ADR-004)
+- **Consequence:** upload/create-note → enqueue `extract` job; handler เก็บ `documents.extracted_text` + `summary`
+  (extract+summary รวมใน handler เดียว); image ที่ OCR ไม่ได้ → เก็บ metadata, extracted_text ว่าง (SCOPE §3.3);
+  **embed→Work Memory ยังไม่ทำ** (Batch F/G, ต้อง human approval ก่อน)
+
+## ADR-027 ✅ Work Memory embedding pipeline (pgvector column, no fallback) — Batch F
+
+- **Decision:** `memory_entries` + `memory_chunks` เก็บความรู้ที่ approved แล้ว; **embedding = pgvector column
+  บน `memory_chunks`** (ไม่ใช่ตารางแยก, ADR-006), dim 768 (nomic-embed-text via `settings.embedding_model`,
+  migration 0006). chunking = word-boundary + overlap (**port จาก LongRian ingestion**, ADR-001). embed รันใน
+  `embed` job handler (engine Batch D); `department_id`+`visibility` ถูก **denormalize ลง chunk** เพื่อ
+  permission-filter ก่อน vector search (ADR-007)
+- **Context:** Batch F ทำเฉพาะ *write-path*; trigger จาก approval = Batch G, retrieval/RAG = Batch H
+- **Consequence:**
+  - **ไม่มี fallback สำหรับ embedding** (ต่างจาก summary, ADR-026) — ถ้า Ollama ไม่พร้อม job `raise` แล้ว worker
+    retry (ADR-012) แทนการเก็บ zero-vector ที่ทำให้ retrieval เพี้ยน
+  - chunks เป็น **append-only**: re-embed = delete + insert ใหม่ (retrieval ไม่เห็นชุดครึ่ง ๆ); ไม่มี `updated_at`
+  - `embed` job enqueue เฉพาะหลัง human approval (ADR-008) — **ยังไม่มี endpoint/trigger ใน Batch F** (มา Batch G)
+  - memory visibility map 1:1 จาก `doc_visibility`; `shared_knowledge` เกิดจาก document ตรง ๆ ไม่ได้ ต้อง promote แยก (ADR-010)
+
 ---
 
 ## Open Decisions to Revisit (assumptions ไม่ใช่มติสุดท้าย)

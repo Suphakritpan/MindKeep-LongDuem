@@ -72,8 +72,8 @@ granted_by (fk users) · created_at
 ```text
 id (uuid, pk) · title · doc_type (note | uploaded) · owner_id (fk users) ·
 department_id (fk departments) · visibility (doc_visibility) · state (doc_state) ·
-summary (nullable) · is_locked (bool) · locked_by (fk users, nullable) · locked_at (nullable) ·
-deleted_at (nullable) · created_at · updated_at
+extracted_text (nullable) · summary (nullable) · is_locked (bool) · locked_by (fk users, nullable) ·
+locked_at (nullable) · deleted_at (nullable) · created_at · updated_at
 ```
 > `state` = review-lifecycle เท่านั้น. lock = `is_locked`/`locked_by`/`locked_at`; delete = `deleted_at`
 > (soft). เอกสาร `approved_to_memory` จึงถูก lock/soft-delete ได้โดยไม่เปลี่ยน `state`

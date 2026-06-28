@@ -1,7 +1,9 @@
 """Import all modules that register job handlers, so the worker sees them.
 
-Later batches add imports here, e.g. (Batch E):
-    from app.modules.documents import jobs as _doc_jobs  # noqa: F401
-
-Batch D has no handlers yet.
+Each import has the side effect of running its @register(...) decorators.
 """
+# Batch E — document extraction + summary
+from app.modules.documents import jobs as _document_jobs  # noqa: F401
+
+# Batch F — work memory embedding
+from app.modules.memory import jobs as _memory_jobs  # noqa: F401

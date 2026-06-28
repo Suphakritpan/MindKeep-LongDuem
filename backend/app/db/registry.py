@@ -15,3 +15,6 @@ from app.modules.files import models as _files  # noqa: F401
 
 # Batch D — background jobs
 from app.jobs import models as _jobs  # noqa: F401
+
+# Batch F — work memory + embeddings
+from app.modules.memory import models as _memory  # noqa: F401
